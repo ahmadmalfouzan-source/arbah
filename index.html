@@ -18,22 +18,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#071009">
-<meta name="description" content="احسب ربحك اليومي من اشتراكات جيميناي ودولينجو — يعمل أوفلاين">
+<meta name="description" content="احسب ربحك اليومي من بيع الاشتراكات. يشتغل أوفلاين">
 <meta property="og:type" content="website">
 <meta property="og:title" content="حصّالة اليوم">
-<meta property="og:description" content="احسب ربحك اليومي من اشتراكات جيميناي ودولينجو — يعمل أوفلاين">
+<meta property="og:description" content="احسب ربحك اليومي من بيع الاشتراكات. يشتغل أوفلاين">
 <meta property="og:image" content="https://ahmadmalfouzan-source.github.io/arbah/icon-512.png">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="أرباح المتجر">
+<meta name="apple-mobile-web-app-title" content="حصّالة اليوم">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <title>حصّالة اليوم</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="./fonts/cairo-700-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./fonts/cairo-700-latin.woff2" as="font" type="font/woff2" crossorigin>
 <script>
 /* تسجيل الـSW أثناء الـparse (install.md P0-1) — لا انتظار window.load */
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
@@ -41,6 +40,47 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
 }
 </script>
 <style>
+/* خطوط ذاتية الاستضافة (polish #11): 8 ملفات woff2 في ./fonts — تُخزَّن في كاش الـSW */
+@font-face{
+  font-family:'Cairo';font-style:normal;font-weight:600;font-display:swap;
+  src:url('./fonts/cairo-600-arabic.woff2') format('woff2');
+  unicode-range:U+0600-06FF, U+0750-077F, U+0870-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC7, U+10EC9-10EEE, U+10EF0-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+@font-face{
+  font-family:'Cairo';font-style:normal;font-weight:600;font-display:swap;
+  src:url('./fonts/cairo-600-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family:'Cairo';font-style:normal;font-weight:700;font-display:swap;
+  src:url('./fonts/cairo-700-arabic.woff2') format('woff2');
+  unicode-range:U+0600-06FF, U+0750-077F, U+0870-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC7, U+10EC9-10EEE, U+10EF0-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+@font-face{
+  font-family:'Cairo';font-style:normal;font-weight:700;font-display:swap;
+  src:url('./fonts/cairo-700-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family:'Cairo';font-style:normal;font-weight:800;font-display:swap;
+  src:url('./fonts/cairo-800-arabic.woff2') format('woff2');
+  unicode-range:U+0600-06FF, U+0750-077F, U+0870-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC7, U+10EC9-10EEE, U+10EF0-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+@font-face{
+  font-family:'Cairo';font-style:normal;font-weight:800;font-display:swap;
+  src:url('./fonts/cairo-800-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family:'IBM Plex Mono';font-style:normal;font-weight:600;font-display:swap;
+  src:url('./fonts/plexmono-600-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family:'IBM Plex Mono';font-style:normal;font-weight:700;font-display:swap;
+  src:url('./fonts/plexmono-700-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 /* ============ توكنز دار السكّ الليليّة (art-direction §2) ============ */
 :root{
   color-scheme:dark;
@@ -57,6 +97,7 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   --gold-foil:#D9A92E;
   --gold-bright:#F0C75E;
   --seal-red:#B4443C;
+  --seal-red-text:#CC6058; /* نصوص الكلفة فقط — تباين 4.76:1 (N3) */
   --cyan:#38BDF8;
   --radius:18px;
   --ease-out:cubic-bezier(.16,1,.3,1);
@@ -79,8 +120,14 @@ body{
   min-height:100vh;
   padding:max(env(safe-area-inset-top),22px) 14px calc(108px + max(env(safe-area-inset-bottom),20px));
   font-size:.95rem;
+  /* حماية iOS على كامل التخطيط: لا تحديد نص، لا قائمة نسخ/بحث، لا وميض لمس، لا زوم بالنقر المزدوج */
+  -webkit-user-select:none;user-select:none;
+  -webkit-touch-callout:none;
   -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
 }
+/* حقول الإدخال تبقى قابلة للتحرير والتحديد */
+input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 /* غيوش مالي خافت ≤4% يحل محل شبكة HUD (art-direction §3) */
 body::before{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.05;
@@ -98,6 +145,7 @@ body::after{
 ::selection{background:rgba(217,169,46,.4);color:#fff}
 :focus-visible{outline:2px solid var(--gold-foil);outline-offset:3px;border-radius:6px}
 input{caret-color:var(--mint-green)}
+input::placeholder,textarea::placeholder{color:var(--fog);opacity:.75}
 input[type=number]{-moz-appearance:textfield;appearance:textfield}
 input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .num{font-family:'IBM Plex Mono','Cairo',monospace;font-variant-numeric:tabular-nums}
@@ -108,10 +156,10 @@ input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appear
 @keyframes riseIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes heroIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.in1{animation:riseIn 400ms var(--ease-out) 0ms both}
+.in1{animation:fadeIn 400ms var(--ease-out) 0ms both}
 .in2{animation:riseIn 450ms var(--ease-out) 80ms both}
 .in3{animation:heroIn 520ms var(--ease-out) 140ms both}
-.in4{animation:riseIn 480ms var(--ease-out) 220ms both}
+.in4{animation:fadeIn 420ms ease-out 220ms both}
 .in5{animation:fadeIn 280ms ease-out 340ms both}
 
 /* ============ الترويسة ============ */
@@ -126,6 +174,9 @@ header.top .today-line{color:var(--fog);font-size:.88rem;margin-top:6px;display:
 }
 #streakBadge.show{display:flex;animation:fadeIn 250ms var(--ease-out) both}
 #streakBadge .sdot{width:7px;height:7px;border-radius:50%;background:var(--gold-foil);flex:none}
+/* كسر السلسلة بلطف: شارة رمادية خافتة لمدة 24 ساعة */
+#streakBadge.dim{color:var(--fog);opacity:.75}
+#streakBadge.dim .sdot{background:var(--fog)}
 
 /* ============ البطاقات ============ */
 .panel{background:var(--ledger);border:1px solid var(--engrave-line);border-radius:var(--radius);padding:20px 18px;margin-bottom:16px}
@@ -180,7 +231,7 @@ header.top .today-line{color:var(--fog);font-size:.88rem;margin-top:6px;display:
 .hero .h-cur{color:var(--mint-green);font-size:1rem;font-weight:700;margin-top:8px;opacity:.85;position:relative}
 .hero .h-sub{display:flex;justify-content:center;gap:18px;margin-top:14px;font-size:.78rem;color:var(--fog);position:relative}
 .hero .h-sub b{font-weight:700}
-.hero .h-sub .vline{width:1px;background:var(--hairline);align-self:stretch}
+.vline{display:inline-block;width:1px;height:.95em;background:var(--hairline);margin:0 8px;vertical-align:-.15em}
 /* شريط الهدف (G2) */
 .goalbar{display:none;margin-top:16px;position:relative;text-align:start}
 .goalbar.show{display:block}
@@ -204,7 +255,7 @@ header.top .today-line{color:var(--fog);font-size:.88rem;margin-top:6px;display:
 .hero .h-slim{display:none}
 .hero.slim{padding:8px 16px}
 .hero.slim::before,.hero.slim::after,.hero.slim .wm,
-.hero.slim .h-label,.hero.slim .h-value,.hero.slim .h-cur,.hero.slim .h-sub,.hero.slim .goalbar{display:none}
+.hero.slim .h-label,.hero.slim .h-value,.hero.slim .h-cur,.hero.slim .h-sub,.hero.slim .whisper,.hero.slim .goalbar{display:none}
 .hero.slim .h-slim{display:flex;align-items:center;justify-content:center;gap:10px}
 .hero.slim .h-slim .sl{font-size:.78rem;color:var(--fog);font-weight:600}
 .hero.slim .h-slim .sv{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.4rem;color:var(--mint-green);font-variant-numeric:tabular-nums}
@@ -231,8 +282,8 @@ body.jolt .wrap{animation:jolt 160ms linear}
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;
 }
 .stepper button{
-  width:48px;height:48px;border:1px solid var(--engrave-line);border-radius:12px;cursor:pointer;
-  background:#141D16;color:var(--ink);font-size:1.4rem;font-weight:700;line-height:1;
+  width:52px;height:52px;border:1px solid var(--engrave-line);border-radius:12px;cursor:pointer;
+  background:var(--ledger-2);color:var(--ink);font-size:1.4rem;font-weight:700;line-height:1;
   font-family:'IBM Plex Mono',monospace;border-bottom-width:2px;border-bottom-color:rgba(0,0,0,.55);
   transition:transform 80ms ease,background-color 150ms ease,color 150ms ease;
   touch-action:manipulation;
@@ -240,7 +291,7 @@ body.jolt .wrap{animation:jolt 160ms linear}
 .stepper button:hover{background:#1A2419}
 .stepper button:active{transform:translateY(1px);background:var(--mint-green);color:var(--mint-ink);border-bottom-width:1px}
 .stepper button:disabled{opacity:.35;cursor:default}
-.stepper button:disabled:active{transform:none;background:#141D16;color:var(--ink)}
+.stepper button:disabled:active{transform:none;background:var(--ledger-2);color:var(--ink)}
 .stepper input{
   width:72px;text-align:center;background:transparent;border:none;color:var(--ink);
   font-size:1.4rem;font-weight:700;font-family:'IBM Plex Mono',monospace;padding:6px 0;
@@ -272,7 +323,7 @@ body.jolt .wrap{animation:jolt 160ms linear}
 @keyframes cellFlash{0%{opacity:.25}100%{opacity:1}}
 .p-profit .cur{font-size:.75rem;color:var(--mint-green);opacity:.8;font-weight:600}
 .p-sub{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--fog);font-variant-numeric:tabular-nums}
-.p-sub .gold{color:var(--gold-foil)} .p-sub .red{color:var(--seal-red)}
+.p-sub .gold{color:var(--gold-foil);font-weight:700} .p-sub .red{color:var(--seal-red-text)}
 @media (max-width:360px){
   .stepper button{width:44px;height:44px}
   .stepper input{width:56px;font-size:1.2rem}
@@ -285,9 +336,9 @@ body.jolt .wrap{animation:jolt 160ms linear}
 .day-ghost{display:flex;align-items:center;gap:6px;margin-inline-start:auto;color:var(--fog);font-size:.76rem}
 .day-ghost input{
   background:transparent;border:none;color:var(--fog);font-family:inherit;font-size:.76rem;
-  width:104px;padding:4px 2px;cursor:pointer;
+  width:104px;min-height:24px;padding:6px 2px;cursor:pointer;
 }
-.day-ghost input:focus{outline:1px solid var(--gold-foil);border-radius:6px}
+.day-ghost input:focus{outline:2px solid var(--gold-foil);border-radius:6px}
 .yday{
   display:flex;align-items:center;gap:6px;background:transparent;color:var(--gold-bright);
   border:1px dashed var(--engrave-line);border-radius:999px;padding:7px 14px;
@@ -309,7 +360,7 @@ canvas#weekChart{width:100%;height:200px;display:block;touch-action:manipulation
 canvas#weekChart:focus{outline:2px solid var(--gold-foil);outline-offset:2px}
 #chartTip{
   position:absolute;z-index:5;pointer-events:none;min-width:130px;max-width:170px;
-  background:#0E1712;border:1px solid var(--engrave-line);border-radius:10px;padding:8px 10px;
+  background:var(--ledger);border:1px solid var(--engrave-line);border-radius:10px;padding:8px 10px;
   font-size:.72rem;line-height:1.9;color:var(--ink);
   opacity:0;visibility:hidden;transform:translateY(6px);transition:opacity 200ms ease-out,transform 200ms ease-out,visibility 0s 200ms;
   box-shadow:0 8px 24px rgba(0,0,0,.5);
@@ -324,6 +375,22 @@ canvas#weekChart:focus{outline:2px solid var(--gold-foil);outline-offset:2px}
 .week-stats .v{font-weight:800;font-size:1rem}
 .week-stats .v.green{color:var(--mint-green)} .week-stats .v.gold{color:var(--gold-foil)}
 .week-stats .vdiv{width:1px;align-self:stretch;background:var(--hairline)}
+
+/* F4 — وين تركّز؟ شريط مقسّم لنسبة ربح المنتجين (آخر 30 يوم) */
+#focusBar{margin-top:14px;padding-top:12px;border-top:1px solid var(--hairline)}
+#focusBar[hidden]{display:none}
+.fb-title{color:var(--fog);font-size:.72rem;font-weight:700;margin-bottom:8px}
+.fb-track{display:flex;height:10px;border-radius:5px;overflow:hidden;background:rgba(244,241,230,.08)}
+.fb-g{background:var(--mint-green);transition:width 400ms var(--ease-out)}
+.fb-d{background:var(--cyan);transition:width 400ms var(--ease-out)}
+.fb-txt{margin-top:8px;font-size:.8rem;line-height:1.9}
+.fb-txt .num{font-weight:800}
+.fb-cap{color:var(--fog);font-size:.72rem}
+@media (prefers-reduced-motion:reduce){.fb-g,.fb-d{transition:none}}
+
+/* همسة الليل — سطر تحت عدّاد الربح، يظهر بعد 9م فقط */
+.whisper{color:var(--fog);font-size:.78rem;margin-top:8px;line-height:1.8}
+.whisper[hidden]{display:none}
 
 /* ============ السجل — «دفتر الأستاذ» (art-direction §6.5) ============ */
 .hist-empty{color:var(--fog);text-align:center;padding:24px 10px;font-size:.88rem;line-height:2}
@@ -389,6 +456,7 @@ details.settings summary svg{flex:none;color:var(--ink);opacity:.8}
 .savebar .sb-info{flex:1;min-width:0}
 .savebar .sb-profit{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.15rem;color:var(--mint-green);font-variant-numeric:tabular-nums;line-height:1.1}
 .savebar .sb-date{font-size:.68rem;color:var(--fog);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.savebar .sb-date.sealed{color:var(--gold-bright);font-weight:800}
 .btn-stamp{
   border:none;border-radius:14px;padding:14px 22px;font-size:.95rem;font-weight:800;color:var(--mint-ink);
   background:var(--mint-green);
@@ -403,13 +471,13 @@ details.settings summary svg{flex:none;color:var(--ink);opacity:.8}
 @keyframes shakeX{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 /* شحن زر الختم (PM6) */
 .btn-stamp::after{
-  content:"";position:absolute;top:0;bottom:0;width:44px;left:-70px;
-  background:linear-gradient(100deg,transparent,rgba(240,199,94,.5),transparent);
-  transform:skewX(-18deg);opacity:0;
+  content:"";position:absolute;top:0;bottom:0;left:0;width:100%;
+  background:linear-gradient(100deg,transparent 35%,rgba(240,199,94,.5) 50%,transparent 65%);
+  transform:translateX(-101%) skewX(-18deg);opacity:0;pointer-events:none;
 }
-.btn-stamp.charged{animation:sheen 2.4s linear infinite}
-.btn-stamp.charged::after{opacity:1}
-@keyframes sheen{0%{left:-70px}100%{left:calc(100% + 26px)}}
+/* إصلاح الـcharged: اللمعة على ::after بـtransform (مركّب فقط) لا الزر نفسه */
+.btn-stamp.charged::after{opacity:1;animation:sheen 2.4s linear infinite}
+@keyframes sheen{0%{transform:translateX(-101%) skewX(-18deg)}100%{transform:translateX(101%) skewX(-18deg)}}
 .btn-copybar{
   flex:none;width:52px;height:52px;border-radius:14px;background:transparent;
   border:1px solid var(--engrave-line);color:var(--ink);
@@ -422,7 +490,7 @@ details.settings summary svg{flex:none;color:var(--ink);opacity:.8}
 /* ============ الاحتفال — «الختم» (art-direction §6.3) ============ */
 .overlay{
   position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
-  background:rgba(4,10,6,.74);
+  background:rgba(7,16,9,.74);
   opacity:0;visibility:hidden;pointer-events:none;transition:opacity 300ms ease,visibility 0s 300ms;
 }
 .overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity 300ms ease;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
@@ -471,7 +539,7 @@ details.settings summary svg{flex:none;color:var(--ink);opacity:.8}
 /* ============ التأكيد داخل التطبيق (بدل confirm الأصلية) ============ */
 .cmodal{
   position:fixed;inset:0;z-index:75;display:flex;align-items:center;justify-content:center;
-  background:rgba(4,10,6,.7);padding:20px;
+  background:rgba(7,16,9,.7);padding:20px;
   opacity:0;visibility:hidden;pointer-events:none;transition:opacity 250ms ease,visibility 0s 250ms;
 }
 .cmodal.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity 250ms ease}
@@ -496,7 +564,7 @@ details.settings summary svg{flex:none;color:var(--ink);opacity:.8}
 
 /* ============ التنبيه (toast) ============ */
 .toast{
-  position:fixed;bottom:calc(104px + max(env(safe-area-inset-bottom),0px));right:50%;transform:translateX(50%) translateY(16px);
+  position:fixed;bottom:calc(96px + max(env(safe-area-inset-bottom),0px));right:50%;transform:translateX(50%) translateY(16px);
   background:var(--mint-green);color:var(--mint-ink);font-weight:700;font-size:.88rem;
   max-width:92vw;
   padding:13px 24px;border-radius:14px;opacity:0;visibility:hidden;pointer-events:none;z-index:70;
@@ -516,13 +584,19 @@ details.settings summary svg{flex:none;color:var(--ink);opacity:.8}
   position:fixed;bottom:calc(96px + max(env(safe-area-inset-bottom),0px));left:50%;transform:translateX(-50%) translateY(12px);
   background:var(--ledger);border:1px solid var(--gold-foil);border-radius:14px;
   display:none;align-items:center;gap:12px;padding:12px 16px;z-index:55;
-  box-shadow:0 12px 32px rgba(0,0,0,.55);font-size:.84rem;font-weight:700;white-space:nowrap;
+  box-shadow:0 12px 32px rgba(0,0,0,.55);font-size:.84rem;font-weight:700;white-space:normal;max-width:min(92vw,420px);
 }
 #updateBar.show{display:flex;animation:riseIn 300ms var(--ease-out) both}
 #updateBar button{
   border:none;border-radius:10px;background:var(--gold-foil);color:#1A1408;font-weight:800;
   font-size:.8rem;padding:9px 16px;cursor:pointer;
 }
+body.upd .toast{bottom:calc(168px + max(env(safe-area-inset-bottom),0px))}
+.toast.err{background:var(--seal-red);color:#FFF5F0}
+.toast.err .t-act{background:rgba(255,255,255,.16);color:#FFF5F0}
+#updateX{background:transparent !important;border:1px solid var(--hairline) !important;color:var(--fog) !important;
+  width:34px;height:34px;border-radius:50%;font-size:1rem;line-height:1;padding:0 !important;position:relative;flex:none}
+#updateX::before{content:"";position:absolute;inset:-5px}
 #iosCard{
   display:none;background:var(--ledger);border:1px solid var(--engrave-line);border-radius:14px;
   padding:16px;margin-bottom:16px;font-size:.84rem;line-height:2;color:var(--fog);
@@ -531,7 +605,7 @@ details.settings summary svg{flex:none;color:var(--ink);opacity:.8}
 #iosCard b{color:var(--ink)}
 #iosCard .x{background:transparent;border:1px solid var(--engrave-line);color:var(--fog);border-radius:8px;padding:6px 14px;font-size:.76rem;margin-top:8px;cursor:pointer}
 
-footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-height:2;opacity:.8}
+footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-height:2;opacity:1}
 #installBtn{
   display:none;margin:14px auto 0;background:transparent;color:var(--gold-bright);
   border:1px solid var(--engrave-line);border-radius:12px;padding:10px 22px;
@@ -539,17 +613,164 @@ footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-
 }
 #installBtn.show{display:block}
 
+/* ============ شارة الأسبوع — 7 مربعات (السبت ← الجمعة) ============ */
+.week-badge{display:flex;gap:6px;margin-bottom:14px}
+.week-badge[hidden]{display:none}
+.wb{
+  width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:700;color:var(--fog);font-family:inherit;
+  border:1px solid var(--hairline);background:transparent;padding:0;
+}
+button.wb{cursor:pointer}
+button.wb:active{transform:scale(.94)}
+.wb.sealed{background:rgba(217,169,46,.14);border-color:var(--engrave-line);color:var(--gold-bright)}
+.wb.today{border-color:var(--gold-foil);box-shadow:0 0 0 1px var(--gold-foil)}
+.wb.future{opacity:.45}
+
+/* ============ G3 — هذا الأسبوع × الماضي (سطر إحصائي ساكن) ============ */
+.week-cmp{margin-top:14px;font-size:.8rem;color:var(--fog);display:flex;align-items:center;gap:8px;line-height:1.9}
+.week-cmp[hidden]{display:none}
+.week-cmp .num{color:var(--ink);font-weight:800}
+.week-cmp svg{width:14px;height:14px;flex:none}
+.week-cmp.up svg{color:var(--mint-green)}
+.week-cmp.down svg,.week-cmp.flat svg{color:var(--fog)}
+
+/* ============ G6 — رف الإنجازات ============ */
+.ach-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:10px 2px;border-top:1px solid var(--hairline)}
+.ach-row:first-child{border-top:none}
+.ach-row .k{color:var(--fog);font-size:.82rem;font-weight:600}
+.ach-row .v{font-weight:800;font-size:.95rem;color:var(--gold-bright);text-align:left}
+.ach-row .v .sub{display:block;font-size:.72rem;color:var(--fog);font-weight:500;margin-top:2px}
+
+/* ============ حارس الختم الصفري — زر «لا» داخل الشريط ============ */
+.btn-no{
+  flex:none;min-width:52px;height:52px;border-radius:14px;background:transparent;
+  border:1px solid var(--engrave-line);color:var(--ink);
+  font-size:.9rem;font-weight:800;cursor:pointer;font-family:inherit;
+}
+.btn-no:active{transform:scale(.95)}
+.btn-stamp.pre{opacity:.45;pointer-events:none}
+.btn-stamp.zero-arm{background:var(--gold-foil);color:#1A1408}
+#copyBtn[hidden],#zeroNo[hidden]{display:none}
+
+/* الشارة نصًا عاديًا عند عدم الختم، وزرًّا عند الختم */
+button.sb-date{background:none;border:none;padding:0;font:inherit;color:inherit;text-align:start;cursor:default;width:100%}
+button.sb-date.sealed{cursor:pointer}
+button.sb-date:disabled{opacity:1}
+button.sb-date.zero-q{color:var(--gold-bright);font-weight:700}
+
+/* نبضة الصف عند القفز إليه من الشارة/شارة الأسبوع */
+.hrow.row-hl{animation:rowHl 1.2s ease-out}
+@keyframes rowHl{0%{background:rgba(217,169,46,.22)}100%{background:transparent}}
+/* L3: أنيميشن كلاس pop الميت لشارة السلسلة */
+#streakBadge.pop{animation:badgePop 220ms var(--ease-spring)}
+@keyframes badgePop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+/* همسة الليل — زر إسكات الليلة */
+.whisper{display:flex;align-items:center;justify-content:center;gap:10px}
+#whisperX{
+  background:transparent;border:1px solid var(--hairline);color:var(--fog);
+  width:24px;height:24px;border-radius:50%;font-size:.85rem;line-height:1;
+  cursor:pointer;flex:none;font-family:inherit;padding:0;
+}
+#whisperX:active{transform:scale(.92)}
+#whisperX{position:relative}
+#whisperX::before{content:"";position:absolute;inset:-10px}
+
+/* ============ بانر إنقاذ أمس (G4-lite) ============ */
+.nudge{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--ledger);border:1px solid var(--gold-foil);border-radius:14px;
+  padding:12px 16px;margin-bottom:16px;font-size:.84rem;font-weight:700;line-height:1.9;
+}
+.nudge[hidden]{display:none}
+.nudge .n-act{display:flex;align-items:center;gap:8px;flex:none}
+#nudgeStamp{
+  border:none;border-radius:10px;background:var(--gold-foil);color:#1A1408;
+  font-weight:800;font-size:.8rem;padding:9px 16px;cursor:pointer;font-family:inherit;
+}
+#nudgeStamp:active{transform:scale(.96)}
+#nudgeX{
+  background:transparent;border:1px solid var(--hairline);color:var(--fog);
+  width:30px;height:30px;border-radius:50%;font-size:1rem;line-height:1;cursor:pointer;font-family:inherit;padding:0;
+  position:relative;
+}
+#nudgeX::before{content:"";position:absolute;inset:-7px}
+/* ============ شارة التاريخ الشبحي في شريط الختم ============ */
+.sb-ghost{
+  flex:none;font-size:.66rem;font-weight:800;color:var(--gold-bright);
+  background:rgba(217,169,46,.14);border:1px solid var(--engrave-line);
+  border-radius:999px;padding:5px 10px;white-space:nowrap;
+}
+.sb-ghost[hidden]{display:none}
+/* ============ بطاقة «اليوم مختوم» ============ */
+#sealedCard{padding:18px 2px}
+#sealedCard[hidden]{display:none}
+.sc-title{font-weight:800;font-size:1rem;color:var(--gold-bright);margin-bottom:8px}
+.sc-line{color:var(--fog);font-size:.82rem;line-height:2;margin-bottom:14px}
+.sc-row{display:flex;gap:10px}
+.sc-row button{flex:1;border-radius:12px;padding:12px;font-weight:800;font-size:.85rem;cursor:pointer;font-family:inherit}
+.sc-row button:active{transform:scale(.97)}
+#sealedCopy{background:transparent;border:1px solid var(--engrave-line);color:var(--ink)}
+#sealedEdit{background:var(--mint-green);border:none;color:var(--mint-ink);border-bottom:3px solid rgba(0,0,0,.45)}
+/* ============ سطر القفز للسجل من الرسم ============ */
+.chart-jump{
+  display:block;width:100%;background:transparent;border:1px dashed var(--engrave-line);
+  color:var(--gold-bright);border-radius:10px;padding:9px;font-size:.8rem;font-weight:700;
+  cursor:pointer;margin-bottom:14px;font-family:inherit;
+}
+.chart-jump[hidden]{display:none}
+.chart-jump:active{transform:scale(.98)}
+/* ============ سطر اليوم (F7) ============ */
+.note-line{color:var(--fog);font-size:.72rem;margin-top:4px;line-height:1.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note-btn{
+  background:transparent;border:none;color:var(--gold-bright);font-size:.72rem;font-weight:700;
+  cursor:pointer;padding:10px 8px;flex:none;font-family:inherit;
+}
+.note-btn:active{transform:scale(.94)}
+#noteModal textarea{
+  width:100%;background:var(--ledger-2);border:1px solid var(--engrave-line);border-radius:10px;
+  color:var(--ink);font-family:inherit;font-size:.9rem;padding:10px 12px;resize:none;margin-bottom:16px;line-height:1.8;
+}
+#noteModal textarea:focus{outline:none;border-color:var(--mint-green);box-shadow:0 0 0 3px rgba(43,191,102,.16)}
+/* ============ مراجعة الأسبوع (G7') ============ */
+#weekReview[hidden]{display:none}
+.wr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.wr-head h2{font-size:1.05rem;font-weight:700}
+#wrX{
+  background:transparent;border:1px solid var(--hairline);color:var(--fog);
+  width:30px;height:30px;border-radius:50%;font-size:1rem;line-height:1;cursor:pointer;font-family:inherit;padding:0;flex:none;
+  position:relative;
+}
+#wrX::before{content:"";position:absolute;inset:-7px}
+.wr-line{font-size:.84rem;line-height:2.1;color:var(--fog)}
+.wr-line b{color:var(--ink)}
+.wr-line .wr-sub{font-size:.74rem}
+.wr-sug{margin-top:6px}
+.wr-row{display:flex;gap:10px;margin-top:14px}
+#wrPin{
+  flex:2;border:none;border-radius:12px;padding:13px;font-weight:800;font-size:.88rem;cursor:pointer;
+  background:var(--gold-foil);color:#1A1408;font-family:inherit;border-bottom:3px solid rgba(0,0,0,.4);
+}
+#wrPin:active{transform:translateY(2px);border-bottom-width:1px}
+#wrLater{
+  flex:1;border-radius:12px;padding:13px;font-weight:700;font-size:.88rem;cursor:pointer;
+  background:transparent;color:var(--ink);border:1px solid var(--engrave-line);font-family:inherit;
+}
+/* C3-J1: التركيز البرمجي على الصف لا يحتاج إطارًا مزدوجًا مع نبضة التمييز */
+.hrow:focus{outline:none}
+
 /* ============ reduced motion: كل شيء فوري ============ */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:1ms !important;animation-iteration-count:1 !important;transition-duration:1ms !important}
   .in1,.in2,.in3,.in4,.in5{animation:none !important;opacity:1 !important}
-  .btn-stamp.charged{animation:none !important}
+  .btn-stamp.charged::after{animation:none !important}
 }
 </style>
 </head>
 <body>
 <canvas id="dust" aria-hidden="true"></canvas>
-<div class="wrap">
+<main class="wrap">
 
   <header class="top in1">
     <h1>حصّالة اليوم <span class="tick">.</span></h1>
@@ -558,30 +779,43 @@ footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-
   </header>
   <div id="heroSentinel" style="height:1px"></div>
 
+  <!-- بانر إنقاذ أمس (G4-lite): يظهر عند الفتح إذا أمس غير مختوم واليوم غير مختوم -->
+  <div class="nudge" id="nudgeBar" hidden>
+    <span>أمس ما انختم. تبي تختمه؟</span>
+    <span class="n-act">
+      <button type="button" id="nudgeStamp">اختم أمس</button>
+      <button type="button" id="nudgeX" aria-label="إغلاق تذكير أمس">×</button>
+    </span>
+  </div>
+
   <!-- العدّاد البطولي — وجه العملة -->
   <section class="hero in3" id="heroPanel" aria-label="ربحك اليوم">
     <span class="wm" aria-hidden="true"></span>
     <div class="h-label">ربحك اليوم<span id="recStar" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg></span></div>
-    <div class="h-value"><span id="odoWrap"><span id="odo" class="odo" aria-hidden="true"></span><span id="goldSweep"></span></span><span class="sr-only" id="heroSr" aria-live="polite">0 ر.س</span></div>
+    <span class="sr-only" id="heroSr" aria-live="polite">—</span>
+    <div class="h-value"><span id="odoWrap"><span id="odo" class="odo" aria-hidden="true">—</span><span id="goldSweep"></span></span></div>
     <div class="h-cur">ر.س</div>
     <div class="h-sub">
       <span>بعت <b class="num" id="t_rev" style="color:var(--gold-foil)">0</b></span>
       <span class="vline"></span>
-      <span>الكلفة <b class="num" id="t_cst" style="color:var(--seal-red)">0</b></span>
+      <span>الكلفة <b class="num" id="t_cst" style="color:var(--seal-red-text)">0</b></span>
     </div>
-    <div id="recChip">رقم قياسي</div>
+    <div class="whisper" id="whisper" hidden><span id="whisperTxt" aria-hidden="true"></span><button type="button" id="whisperX" aria-label="إسكات التذكير لليلة">×</button></div>
+    <span class="sr-only" id="whisperSr" aria-live="polite"></span>
+    <div id="recChip" aria-hidden="true">رقم قياسي</div>
     <div class="goalbar" id="goalBar">
-      <div class="gb-track"><div class="gb-fill" id="gbFill"></div></div>
-      <div class="gb-txt" id="gbTxt"></div>
+      <div class="gb-track" id="gbTrack" role="progressbar" aria-label="تقدم الهدف" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="gb-fill" id="gbFill"></div></div>
+      <div class="gb-txt" id="gbTxt" aria-live="polite"></div>
     </div>
     <div class="h-slim">
       <span class="sl">ربحك اليوم</span>
-      <span class="sv num" id="odoSlim">0</span>
+      <span class="sv num" id="odoSlim">—</span>
       <span class="sc">ر.س</span>
     </div>
   </section>
 
-  <section class="panel in2" aria-label="بيع اليوم">
+  <section class="panel in2" id="salesPanel" aria-label="بيع اليوم">
+   <div id="salesForm">
     <div class="sales-head">
       <h2>بيع اليوم</h2>
       <label class="day-ghost" for="day">
@@ -589,6 +823,7 @@ footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-
         <input type="date" id="day" aria-label="تاريخ المبيعات">
       </label>
     </div>
+    <div id="weekBadge" class="week-badge" role="group" aria-label="أيام الأسبوع" hidden></div>
     <button type="button" class="yday" id="ydayBtn">نفس مبيعات أمس</button>
 
     <div class="prow">
@@ -628,25 +863,49 @@ footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-
         </div>
       </div>
     </div>
+   </div><!-- /salesForm -->
+   <!-- بطاقة «اليوم مختوم»: حالة الانتهاء الصريحة للوحة -->
+   <div id="sealedCard" hidden>
+     <div class="sc-title">اليوم مختوم</div>
+     <div class="sc-line" id="sealedLine"></div>
+     <div class="sc-row">
+       <button type="button" id="sealedCopy">نسخ الملخص</button>
+       <button type="button" id="sealedEdit">تعديل</button>
+     </div>
+   </div>
   </section>
 
   <div id="iosCard">
-    <b>ثبّت حصّالة اليوم على شاشتك:</b><br>
-    اضغط زر المشاركة في سفاري ← «إضافة إلى الشاشة الرئيسية»
-    <br><button type="button" class="x" id="iosCardX">فهمت</button>
+    <b>خلّها على شاشتك:</b><br>
+    زر المشاركة في سفاري ← «إضافة إلى الشاشة الرئيسية»
+    <br><button type="button" class="x" id="iosCardX">تمام</button>
   </div>
 
-  <section class="panel in4" aria-label="نبض الأرباح" id="chartPanel">
-    <h2>نبض الأسبوع</h2>
-    <div class="seg" role="group" aria-label="مدة الرسم">
-      <button type="button" data-range="7" class="on">7 أيام</button>
-      <button type="button" data-range="30">30 يومًا</button>
-      <button type="button" data-range="all">الكل</button>
+  <!-- مراجعة الأسبوع (G7'): بطاقة صباح السبت فقط — حوكمة الهدف الأسبوعي -->
+  <section class="panel in4" id="weekReview" aria-label="مراجعة الأسبوع" hidden>
+    <div class="wr-head">
+      <h2>مراجعة الأسبوع</h2>
+      <button type="button" id="wrX" aria-label="إغلاق مراجعة الأسبوع">×</button>
     </div>
-    <p class="hint">المس أي عمود وشوف تفاصيله</p>
+    <div id="wrBody"></div>
+    <div class="wr-row">
+      <button type="button" id="wrPin"></button>
+      <button type="button" id="wrLater">مو الحين</button>
+    </div>
+  </section>
+
+  <section class="panel in4" aria-label="نبض الأسبوع" id="chartPanel">
+    <h2>نبض الأسبوع</h2>
+    <button type="button" class="chart-jump" id="chartJump" hidden></button>
+    <div class="seg" role="group" aria-label="مدة الرسم">
+      <button type="button" data-range="7" class="on" aria-pressed="true">7 يوم</button>
+      <button type="button" data-range="30" aria-pressed="false">30 يوم</button>
+      <button type="button" data-range="all" aria-pressed="false">الكل</button>
+    </div>
+    <p class="hint" id="chartHint">المس أي عمود وشوف تفاصيله</p>
     <div class="chart-wrap">
       <canvas id="weekChart" tabindex="0" role="img" aria-label="رسم أعمدة لأرباح الأيام"></canvas>
-      <div id="chartTip"></div>
+      <div id="chartTip" aria-hidden="true"></div>
     </div>
     <div class="sr-only" id="chartLive" aria-live="polite"></div>
     <div class="week-stats">
@@ -654,6 +913,12 @@ footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-
       <span class="vdiv"></span>
       <div class="ws"><span class="k">أفضل يوم</span><span class="v gold" id="w_best">—</span></div>
     </div>
+    <div id="focusBar" hidden>
+      <div class="fb-title">وين تركّز؟</div>
+      <div class="fb-track" id="fbTrack" role="img" aria-label="نسبة ربح المنتجين"><div class="fb-g" id="fbG"></div><div class="fb-d" id="fbD"></div></div>
+      <div class="fb-txt" id="fbTxt"></div>
+    </div>
+    <div id="weekCmp" class="week-cmp" aria-live="polite" hidden></div>
   </section>
 
   <section class="panel in5" aria-label="دفتر الأرباح" id="historyPanel">
@@ -665,11 +930,19 @@ footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-
     </div>
   </section>
 
+  <details class="settings in5" id="achDet" hidden>
+    <summary>
+      إنجازاتي
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <div class="set-body" id="achBody"></div>
+  </details>
+
   <details class="settings in5" id="settingsDet">
     <summary>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a2 2 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       الأسعار والتكاليف
-      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
     </summary>
     <div class="set-body">
       <div class="set-group">
@@ -706,16 +979,16 @@ footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-
             <input type="number" id="rate" class="num" value="4" min="0.1" step="0.01" inputmode="decimal">
           </div>
           <div class="field">
-            <label for="goalAmt">هدفك؟ (ر.س)</label>
+            <label for="goalAmt">هدفك (ر.س)</label>
             <input type="number" id="goalAmt" class="num" min="0" step="10" inputmode="numeric" placeholder="مثال: 200">
           </div>
           <div class="field full">
             <label>مدة الهدف</label>
             <div class="seg goal-seg" role="group" aria-label="مدة الهدف" style="margin-bottom:0">
-              <button type="button" data-goalperiod="week" class="on">أسبوعي</button>
-              <button type="button" data-goalperiod="month">شهري</button>
+              <button type="button" data-goalperiod="week" class="on" aria-pressed="true">أسبوعي</button>
+              <button type="button" data-goalperiod="month" aria-pressed="false">شهري</button>
             </div>
-            <span class="fhint">اتركه فاضي إذا ما تبي هدف — كل شي يشتغل عادي بدونه</span>
+            <span class="fhint">اتركه فاضي. التطبيق يشتغل عادي بدونه</span>
           </div>
         </div>
       </div>
@@ -724,27 +997,30 @@ footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-
 
   <footer class="in5">
     بياناتك على جهازك بس. ما تطلع لأحد<br>
-    أسعارك تنحفظ تلقائيًا
-    <br><button type="button" id="installBtn">ثبّت التطبيق</button>
+    أسعارك تنحفظ لحالها
+    <br><button type="button" id="installBtn">ثبّت حصّالة اليوم</button>
   </footer>
-</div>
+</main>
 
+<!-- منظومة الأيقونات: stroke-width موحد = 2 (art-direction §3) -->
 <!-- شريط الختم الثابت -->
 <div class="savebar">
   <div class="sb-in">
     <div class="sb-info">
       <div class="sb-profit num" id="sbProfit">0</div>
-      <div class="sb-date" id="sbDate">سيُحفظ في: اليوم</div>
+      <button type="button" class="sb-date" id="sbDate" disabled>بيختم في: اليوم</button>
     </div>
+    <span class="sb-ghost" id="sbGhost" hidden></span>
     <button class="btn-stamp" id="stampBtn" type="button">اختم اليوم</button>
+    <button class="btn-no" id="zeroNo" type="button" aria-label="لا. إلغاء الختم الصفري" hidden>لا</button>
     <button class="btn-copybar" id="copyBtn" type="button" aria-label="انسخ الملخص">
-      <svg id="copyIco" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
-      <svg id="copyOk" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+      <svg id="copyIco" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+      <svg id="copyOk" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
     </button>
   </div>
 </div>
 
-<div id="updateBar"><span>نسخة جديدة متوفرة</span><button type="button" id="updateGo">حدّث</button></div>
+<div id="updateBar" role="status"><span>نزلت نسخة أجدد. بياناتك مثل ما هي</span><button type="button" id="updateGo">حدّث</button><button type="button" id="updateX" aria-label="إغلاق بانر التحديث">×</button></div>
 
 <!-- الاحتفال — الختم -->
 <div class="overlay" id="overlay">
@@ -760,7 +1036,7 @@ footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-
 <div id="goldFlash"></div>
 
 <!-- التأكيد داخل التطبيق -->
-<div class="cmodal" id="cmodal" role="dialog" aria-modal="true" aria-labelledby="cmTitle">
+<div class="cmodal" id="cmodal" role="dialog" aria-modal="true" aria-labelledby="cmTitle" aria-describedby="cmMsg">
   <div class="cm-card">
     <div class="cm-title" id="cmTitle"></div>
     <div class="cm-msg" id="cmMsg"></div>
@@ -771,13 +1047,30 @@ footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-
   </div>
 </div>
 
+<!-- سطر اليوم (F7): مودال تحرير الملاحظة — يعيد استخدام أنماط cmodal -->
+<div class="cmodal" id="noteModal" role="dialog" aria-modal="true" aria-labelledby="noteTitle">
+  <div class="cm-card">
+    <div class="cm-title" id="noteTitle"></div>
+    <textarea id="noteText" maxlength="140" rows="3" aria-labelledby="noteTitle" placeholder="سطر واحد بس… مثال: السوق نايم، موسم اختبارات"></textarea>
+    <div class="cm-row">
+      <button type="button" class="cm-ok" id="noteSave">احفظ السطر</button>
+      <button type="button" class="cm-cancel" id="noteCancel">إلغاء</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status"></div>
+<span class="sr-only" id="srLive" role="status"></span>
 
 <script>
 (function(){
 'use strict';
-var LS='store-profit-v2', SEED='store-profit-seeded-v2', MILES=LS+'.miles', FIRST=LS+'.firstsave';
+var LS='store-profit-v2', MILES=LS+'.miles', FIRST=LS+'.firstsave';
 var GOAL=LS+'.goal', GOALHIT=LS+'.goalhit', IOSX=LS+'.iosx', SMILES=LS+'.streakmiles';
+var DRAFT=LS+'.draft', SAVES=LS+'.savecount', LPH=LS+'.lphint', BROKE=LS+'.streakbroke';
+var NOTES=LS+'.notes', NUDGE=LS+'.nudge', WRK=LS+'.wrk';
+/* تهريب قيم localStorage قبل إدراجها في HTML (L1) */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function $(id){return document.getElementById(id);}
 function num(id){var v=parseFloat($(id).value);return isFinite(v)&&v>=0?v:0;}
@@ -788,38 +1081,90 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function buzz(p){ if(reduced) return; try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 function lastInteract(){ amb.last=performance.now(); if(!amb.raf&&!reduced){ambInit();amb.raf=requestAnimationFrame(ambLoop);} }
 document.addEventListener('pointerdown',lastInteract,{passive:true});
+/* iOS: منع قائمة «نسخ/بحث» عند النقر السريع المتكرر على العناصر التفاعلية فقط.
+   حقول الإدخال مستثناة (تبقى قابلة للتركيز والتحرير)، ومناطق التمرير غير مشمولة
+   أصلًا فيبقى التمرير يعمل طبيعيًا */
+document.addEventListener('touchstart',function(ev){
+  var t=ev.target;
+  if(t&&t.closest&&t.closest('button,.stepper,#weekChart,.savebar,.seg')&&!t.closest('input,textarea,select'))ev.preventDefault();
+},{passive:false});
 
-/* ---------- toast (role=status + visibility) ---------- */
-var toastT1=null,toastT2=null,toastHasAction=false;
-function toastBase(html,ms,action){
+/* ---------- toast (role=status + visibility + طابور N12) ---------- */
+var toastT1=null,toastT2=null,toastHasAction=false,toastPaused=false,toastEndAt=0,toastQueue=[];
+var pendingUndoEntry=null; /* قيد داخل نافذة التراجع — يخفي بطاقة «اليوم مختوم» */
+function showToastNow(html,ms,actions,cls){
   var t=$('toast');
-  /* تنبيه الإجراء (تراجع) أهم — لا يمحوّه تنبيه عادي */
-  if(!action&&toastHasAction&&t.classList.contains('show'))return;
   t.innerHTML='';
+  t.classList.toggle('err',!!cls);
   var s=document.createElement('span');s.textContent=html;t.appendChild(s);
-  toastHasAction=!!action;
-  if(action){
+  toastHasAction=actions.length>0;
+  toastEndAt=Date.now()+(ms||2200);
+  actions.forEach(function(action){
     var b=document.createElement('button');b.type='button';b.className='t-act';b.textContent=action.label;
-    b.addEventListener('click',function(){clearTimeout(toastT1);clearTimeout(toastT2);hideT();action.fn();});
+    b.addEventListener('click',function(){
+      toastPaused=false;clearTimeout(toastT1);clearTimeout(toastT2);hideT();action.fn();
+      /* C4-T1: الإجراء الذي لا ينقل التركيز بنفسه («نسخ الملخص») يعيده لزر الختم */
+      if(document.activeElement===document.body){var sb=$('stampBtn');if(sb)sb.focus();}
+    });
+    /* N12: إيقاف عدّاد التنبيه أثناء التركيز على زر الإجراء، ويُستأنف عند blur */
+    b.addEventListener('focus',function(){toastPaused=true;clearTimeout(toastT1);});
+    b.addEventListener('blur',function(){
+      if(!toastPaused)return;toastPaused=false;
+      clearTimeout(toastT1);
+      toastT1=setTimeout(beginHide,Math.max(800,toastEndAt-Date.now()));
+    });
     t.appendChild(b);
-  }
+  });
   t.classList.remove('leaving');t.classList.add('show');
   clearTimeout(toastT1);clearTimeout(toastT2);
-  toastT1=setTimeout(function(){
+  toastT1=setTimeout(beginHide,ms||2200);
+  function beginHide(){
     t.classList.add('leaving');
     toastT2=setTimeout(hideT,260);
-  },ms||2200);
-  function hideT(){t.classList.remove('show');t.classList.remove('leaving');toastHasAction=false;}
+  }
+  function hideT(){
+    t.classList.remove('show');t.classList.remove('leaving');t.classList.remove('err');
+    var hadAction=toastHasAction;
+    toastHasAction=false;toastPaused=false;
+    if(hadAction&&pendingUndoEntry){pendingUndoEntry=null;refreshSealedCard();}
+    /* N12: طابور — التنبيه المؤجّل يظهر بعد انتهاء تنبيه الإجراء */
+    var q=toastQueue.shift();
+    if(q){if(q.entry)pendingUndoEntry=q.entry;showToastNow(q.html,q.ms,q.actions||[]);}
+  }
+}
+function toastBase(html,ms,actions,entry,cls){
+  var t=$('toast');
+  actions=actions||[];
+  /* Q4/Q5: أي تنبيه يصل أثناء تنبيه-إجراء معروض يُحفظ في الطابور (FIFO —
+     عند الامتلاء يُزاح الأقدم) بدل الفقدان الصامت */
+  if(toastHasAction&&t.classList.contains('show')){
+    if(toastQueue.length>=3)toastQueue.shift();
+    toastQueue.push({html:html,ms:ms,actions:actions,entry:entry||null});
+    return;
+  }
+  showToastNow(html,ms,actions,cls);
 }
 function toast(m){toastBase(m,2200,null);}
-function toastUndo(label,fn){toastBase(label,8000,{label:'تراجع',fn:fn});}
+function toastErr(m){toastBase(m,2600,null,null,'err');}
+function toastUndo(label,fn){toastBase(label,8000,[{label:'تراجع',fn:fn}]);}
+/* تنبيه ما بعد الختم: نسخ الملخص + تراجع */
+function toastSaved(label,entry,date,undoFn){
+  pendingUndoEntry=entry;
+  toastBase(label,8000,[
+    {label:'نسخ الملخص',fn:function(){doCopyText(summaryText(entry,date));}},
+    /* N12: بعد التراجع يعود التركيز لزر الختم */
+    {label:'تراجع',fn:function(){undoFn();var sb=$('stampBtn');if(sb)sb.focus();}}
+  ],entry);
+}
 
 function todayRiyadh(){return new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'});}
 function prevDay(iso){return new Date(new Date(iso+'T12:00:00').getTime()-864e5).toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'});}
 function fmtDate(iso,style){
   try{
     var d=new Date(iso+'T12:00:00');
-    var o=style==='short'?{weekday:'short',day:'numeric',month:'numeric',timeZone:'Asia/Riyadh'}
+    /* RLM يُحل جذريًا: الصيغة المختصرة لفظية («11 أكتوبر») — بلا شرطات
+       وبلا أي محارف تحكم في الاتجاه أصلًا */
+    var o=style==='short'?{day:'numeric',month:'long',timeZone:'Asia/Riyadh'}
                           :{weekday:'long',day:'numeric',month:'long',timeZone:'Asia/Riyadh'};
     return new Intl.DateTimeFormat('ar',o).format(d);
   }catch(e){return iso;}
@@ -833,24 +1178,36 @@ function loadCfg(){
 function saveCfg(c){localStorage.setItem(LS+'.cfg',JSON.stringify(c));}
 function loadHist(){try{return JSON.parse(localStorage.getItem(LS+'.hist'))||[];}catch(e){return[];}}
 function saveHist(h){localStorage.setItem(LS+'.hist',JSON.stringify(h));}
+/* ===== ذاكرة السجل — مسحة واحدة مشتركة (Q1) ===== */
+var histMem=null; /* null = لم تُحمَّل بعد */
+function getHist(){
+  if(histMem===null){
+    try{histMem=JSON.parse(localStorage.getItem(LS+'.hist'))||[];}catch(e){histMem=[];}
+  }
+  return histMem;
+}
+/* مسار الكتابة الوحيد: ذاكرة + تخزين + maxPrfMem من نفس المصفوفة — بلا loadHist إضافي */
+function setHist(h){
+  histMem=h;
+  saveHist(h);
+  maxPrfMem=0;histCountMem=0;
+  for(var i=0;i<h.length;i++){histCountMem++;var v=totals(h[i]).prf;if(v>maxPrfMem)maxPrfMem=v;}
+}
+function invalidateHist(){histMem=null;}
+/* تعدد التبويبات: أي كتابة خارجية تُبطل الذاكرة */
+window.addEventListener('storage',function(ev){if(ev.key===LS+'.hist')invalidateHist();});
 function loadGoal(){try{var g=JSON.parse(localStorage.getItem(GOAL));if(g&&g.amount>0)return g;}catch(e){}return null;}
 function saveGoal(g){if(g&&g.amount>0)localStorage.setItem(GOAL,JSON.stringify(g));else localStorage.removeItem(GOAL);}
+/* L5: قيمة GOALHIT في الذاكرة — تُقرأ مرة عند التحميل وتُكتب عند الحفظ فقط */
+var goalHitMem=null;
+function loadGoalHit(){try{goalHitMem=localStorage.getItem(GOALHIT);}catch(e){goalHitMem=null;}}
+function setGoalHit(v){goalHitMem=v;try{if(v==null)localStorage.removeItem(GOALHIT);else localStorage.setItem(GOALHIT,v);}catch(e){}}
 function totals(e){
   var rev=e.g.price*e.g.qty+e.d.price*e.d.qty;
   var cst=e.g.costUSD*e.rate*e.g.qty+e.d.costUSD*e.rate*e.d.qty;
   return {rev:rev,cst:cst,prf:rev-cst};
 }
 function brokenMiles(){try{return JSON.parse(localStorage.getItem(MILES))||[];}catch(e){return[];}}
-function seed(){
-  if(localStorage.getItem(SEED))return;
-  var t=todayRiyadh(), y=prevDay(t);
-  saveHist([
-    {id:'seed-'+t,date:t,rate:4,g:{price:5,costUSD:0.40,qty:9},d:{price:15,costUSD:0.50,qty:0}},
-    {id:'seed-'+y,date:y,rate:4,g:{price:5,costUSD:0.40,qty:0},d:{price:15,costUSD:0.50,qty:2}}
-  ]);
-  localStorage.setItem(SEED,'1');
-}
-
 /* ---------- صوت العتبات ---------- */
 var AC=null;
 function ensureAudio(){
@@ -910,10 +1267,14 @@ function renderOdo(v,snap){
   }
 }
 /* إعلان قارئ الشاشة بتهدئة 800ms (a11y F6) */
-var srT=null;
+var srT=null, recAnnounce=false;
 function srUpdate(v){
   clearTimeout(srT);
-  srT=setTimeout(function(){$('heroSr').textContent=money(v);},reduced?0:800);
+  srT=setTimeout(function(){
+    /* C2-R1: إلحاق «رقم قياسي جديد» بالإعلان نفسه بدل منطقة جديدة */
+    $('heroSr').textContent=money(v)+(recAnnounce?'. رقم قياسي جديد':'');
+    recAnnounce=false;
+  },reduced?0:800);
 }
 function animateHeroTo(target,instant){
   target=Math.max(0,target);
@@ -965,14 +1326,29 @@ function paintStatic(c){
 }
 function recalc(){
   var c=current();
+  /* حارس الختم الصفري: أي إدخال يرفع الربح فوق الصفر يُسقط التسليح */
+  if(zeroArmed&&c.prf!==0)disarmZeroGuard();
   paintStatic(c);
-  animateHeroTo(c.prf);
-  updateGlow(c.prf);
-  updateCharge(c.prf);
+  if(sealedSnap){
+    /* F3: اليوم مختوم — الـhero والـh-sub وsbProfit مثبتة على اللقطة لا على الأصفار */
+    var sp=sealedSnap;
+    animateHeroTo(sp.prf,true);
+    $('t_rev').textContent=fmt(sp.rev);$('t_cst').textContent=fmt(sp.cst);
+    $('sbProfit').textContent=fmt(sp.prf)+' ر.س';
+    updateGlow(sp.prf);updateCharge(sp.prf);
+  }else{
+    animateHeroTo(c.prf);
+    updateGlow(c.prf);
+    updateCharge(c.prf);
+  }
   checkLiveRecord(c.prf);
   checkWave(c.prf);
-  updateGoalBar();
-  updateSavebarDate();
+  /* Q1: مسحة واحدة للسجل تُمرَّر للقرّاء بدل 3 مسحات */
+  var h=getHist();
+  updateGoalBar(h);
+  updateSavebarDate(h);
+  saveDraft(c);
+  updateWhisper(h);
   return c;
 }
 
@@ -988,27 +1364,30 @@ function monthRange(today){
   var ym=today.slice(0,7);
   return {from:ym+'-01',to:ym+'-31',key:'m'+ym};
 }
-function goalSum(g){
-  var h=loadHist(), r=g.period==='month'?monthRange(todayRiyadh()):weekRange(todayRiyadh());
+function goalSum(g,h){
+  h=h||getHist();
+  var r=g.period==='month'?monthRange(todayRiyadh()):weekRange(todayRiyadh());
   var s=0;
   h.forEach(function(e){if(e.date>=r.from&&e.date<=r.to)s+=totals(e).prf;});
   return {sum:s,range:r};
 }
-function updateGoalBar(){
+function updateGoalBar(h){
+  h=h||getHist();
   var g=loadGoal(), bar=$('goalBar');
   if(!g){bar.classList.remove('show');return;}
   bar.classList.add('show');
-  var gs=goalSum(g), pct=clamp(gs.sum/g.amount,0,1);
+  var gs=goalSum(g,h), pct=clamp(gs.sum/g.amount,0,1);
   var fill=$('gbFill');
   fill.style.width=(pct*100).toFixed(1)+'%';
   fill.classList.toggle('gold',pct>=1);
+  var track=$('gbTrack');if(track)track.setAttribute('aria-valuenow',Math.round(pct*100));
   var perName=g.period==='month'?'الشهر':'الأسبوع';
   var txt;
   if(pct>=1){
-    txt='<b>صكيت الهدف</b> — +'+fmt(gs.sum-g.amount)+' فوقه';
-    var hit=localStorage.getItem(GOALHIT);
-    if(hit!==gs.range.key+':'+g.amount){
-      localStorage.setItem(GOALHIT,gs.range.key+':'+g.amount);
+    txt='<b>صكيت الهدف</b>. وزايد عليه '+fmt(gs.sum-g.amount)+' ر.س';
+    /* L5: القراءة/الكتابة من ذاكرة goalHitMem — لا getItem مع كل recalc */
+    if(goalHitMem!==gs.range.key+':'+g.amount){
+      setGoalHit(gs.range.key+':'+g.amount);
       if(!reduced){var gf=$('goldFlash');gf.classList.remove('go');void gf.offsetWidth;gf.classList.add('go');}
     }
   }else{
@@ -1018,7 +1397,7 @@ function updateGoalBar(){
       var dim=new Date(today.slice(0,7)+'-01T12:00:00');
       var daysIn=new Date(dim.getFullYear(),dim.getMonth()+1,0).getDate();
       var left=daysIn-parseInt(today.slice(8,10),10)+1;
-      if(left>0)txt+='<span class="daily">المطلوب يوميًا: '+fmt((g.amount-gs.sum)/left)+' ر.س</span>';
+      if(left>0)txt+='<span class="daily">خطوتك اليومية: '+fmt((g.amount-gs.sum)/left)+' ر.س</span>';
     }
   }
   $('gbTxt').innerHTML=txt;
@@ -1028,10 +1407,11 @@ function bindGoalSeg(){
     b.addEventListener('click',function(){
       document.querySelectorAll('[data-goalperiod]').forEach(function(x){x.classList.remove('on');});
       b.classList.add('on');
+      syncPressed('[data-goalperiod]');
       var g=loadGoal()||{amount:0,period:'week'};
       g.period=b.getAttribute('data-goalperiod');
       saveGoal(g.amount>0?g:null);
-      localStorage.removeItem(GOALHIT);
+      setGoalHit(null);
       updateGoalBar();
     });
   });
@@ -1046,19 +1426,25 @@ function updateCharge(p){
 }
 
 /* ---------- الرقم القياسي أثناء الكتابة (PM2) ---------- */
+/* L4: أعلى ربح في الذاكرة — يُحدَّث عند الحفظ/الحذف فقط، لا مسح للسجل مع كل ضغطة */
+var maxPrfMem=0, histCountMem=0;
+function refreshMaxPrf(){
+  maxPrfMem=0;histCountMem=0;
+  try{loadHist().forEach(function(e){histCountMem++;var v=totals(e).prf;if(v>maxPrfMem)maxPrfMem=v;});}catch(e){}
+}
 var recCrossed=false, recBuzzed=false;
 function checkLiveRecord(p){
-  if(reduced)return;
-  var h=loadHist(), max=0;
-  h.forEach(function(e){var v=totals(e).prf;if(v>max)max=v;});
-  if(h.length>=2&&p>max&&!recCrossed){
-    recCrossed=true;
+  /* C4-R1: بلا إسكات كامل — الـCSS يُسكت الحركة، والمعلومة تصل للجميع */
+  if(histCountMem>=2&&p>maxPrfMem&&!recCrossed){
+    recCrossed=true;recAnnounce=true;
+    /* المسار الفوري (reduce) لا يستدعي srUpdate — نعلن هنا مباشرة */
+    if(reduced)srUpdate(p);
     var sw=$('goldSweep');sw.classList.remove('go');void sw.offsetWidth;sw.classList.add('go');
     $('recStar').classList.add('show');
     var chip=$('recChip');chip.classList.add('show');
     setTimeout(function(){chip.classList.remove('show');},900);
     if(!recBuzzed){recBuzzed=true;buzz([15,30,15]);}
-  }else if(p<=max&&recCrossed){
+  }else if(p<=maxPrfMem&&recCrossed){
     recCrossed=false;$('recStar').classList.remove('show');
   }
 }
@@ -1085,7 +1471,7 @@ function startWave(){
   waveAnim=requestAnimationFrame(loop);
 }
 function waveFactor(i,w){
-  if(!w)return 1;
+  if(!w||!isFinite(w.now)||!isFinite(w.waveT0))return 1;
   var k=(w.now-w.waveT0-i*70)/220;
   if(k<=0||k>=1)return 1;
   return 1+0.14*Math.sin(k*Math.PI);
@@ -1096,7 +1482,8 @@ var chartState={bars:[],sel:null,raf:null};
 var chartRange='7';
 var CH=200;
 function chartData(){
-  var h=loadHist().sort(function(a,b){return a.date<b.date?-1:1;});
+  /* الخط الأحمر: نسخة قبل الفرز — لا طفرة على الذاكرة المشتركة */
+  var h=getHist().slice().sort(function(a,b){return a.date<b.date?-1:1;});
   if(chartRange==='7')h=h.slice(-7);
   else if(chartRange==='30')h=h.slice(-30);
   var max=1;
@@ -1125,6 +1512,8 @@ function paintChart(cd,bars,W,sel,wave){
     var dim=(sel!==null&&sel!==b.i);
     var wf=waveFactor(b.i,wave);
     var bh=b.h*wf, by=CH-30-bh;
+    /* BUG-4: تطهير دفاعي — أي قيمة غير منتهية (سباق نادر في مسار الموجة) تُستبدل بشريط افتراضي بدل رمي createLinearGradient */
+    if(!isFinite(bh)||bh<=0){bh=4;by=CH-30-4;}
     x.save();
     x.globalAlpha=dim?0.45:1;
     if(b.best){
@@ -1157,24 +1546,28 @@ function paintChart(cd,bars,W,sel,wave){
   chartState.bars=bars.map(function(b){return{cx:b.cx,x:b.x,y:CH-30-b.h,w:b.bw,h:b.h,e:b.e,i:b.i};});
   var sum=cd.h.reduce(function(a,e){return a+totals(e).prf;},0);
   $('w_total').textContent=money(sum);
-  $('wsTotalK').textContent=chartRange==='7'?'حصيلة 7 أيام':chartRange==='30'?'حصيلة 30 يومًا':'حصيلة كل الأيام';
+  $('wsTotalK').textContent=chartRange==='7'?'حصيلة 7 يوم':chartRange==='30'?'حصيلة 30 يوم':'حصيلة كل الأيام';
   if(cd.h.length){
     var bb=cd.h[cd.best];
     $('w_best').textContent=fmtDate(bb.date,'short')+' | '+money(totals(bb).prf);
-    cv.setAttribute('aria-label','رسم أعمدة لأرباح '+(chartRange==='all'?'كل الأيام':'آخر '+chartRange+' أيام')+' — أفضل يوم '+fmtDate(bb.date,'short')+' بربح '+money(totals(bb).prf));
+    cv.setAttribute('aria-label','رسم أعمدة لأرباح '+(chartRange==='all'?'كل الأيام':'آخر '+chartRange+' يوم')+'. أفضل يوم '+fmtDate(bb.date,'short')+' بربح '+money(totals(bb).prf));
   }else{$('w_best').textContent='—';}
 }
 function drawChart(mode,opt){
   opt=opt||{};
+  updateFocusBar();
+  updateWeekCmp();
   var cv=$('weekChart');if(!cv)return;
   var W=cv.clientWidth||cv.parentNode.clientWidth||300;
   var cd=chartData();
+  /* F9: التلميح «المس أي عمود» يظهر فقط عند وجود أعمدة */
+  var chh=$('chartHint');if(chh)chh.hidden=!cd.h.length;
   if(!cd.h.length){
     var dpr=Math.min(2,window.devicePixelRatio||1);
     cv.width=Math.round(W*dpr);cv.height=Math.round(CH*dpr);
     var x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,CH);
     x.fillStyle='#9AA39B';x.font='13px Cairo,sans-serif';x.textAlign='center';
-    x.fillText('احفظ أول يوم وشوف أعمدتك تكبر',W/2,CH/2);
+    x.fillText('اختم أول يوم وشوف أعمدتك تكبر',W/2,CH/2);
     $('w_total').textContent=money(0);$('w_best').textContent='—';
     chartState.bars=[];return false;
   }
@@ -1227,42 +1620,60 @@ function showTip(i){
   var bits=[];
   if(e.g.qty>0)bits.push('جيميناي ×'+e.g.qty);
   if(e.d.qty>0)bits.push('دولينجو ×'+e.d.qty);
-  tip.innerHTML='<div class="tt-day">'+fmtDate(e.date)+'</div>'
+  tip.innerHTML='<div class="tt-day">'+esc(fmtDate(e.date))+'</div>'
     +'<div class="tt-p">ربح '+money(t.prf)+'</div>'
     +'<div class="tt-s">'+bits.join(' | ')+'</div>';
   var wrap=$('chartPanel'),W=wrap.clientWidth;
   tip.style.left=clamp(b.cx-75,8,Math.max(8,W-158))+'px';
   tip.style.top=Math.max(4,b.y-86)+'px';
   tip.classList.add('show');
-  $('chartLive').textContent=fmtDate(e.date)+' — ربح '+money(t.prf)+(bits.length?' — '+bits.join('، '):'');
+  $('chartLive').textContent=fmtDate(e.date)+'. ربح '+money(t.prf)+(bits.length?'. '+bits.join('، '):'');
   buzz(8);
+  /* القفز للسجل من العمود: سطر «عرض في السجل» أعلى اللوحة */
+  var cj=$('chartJump');
+  cj.innerHTML=esc(fmtDate(e.date))+'<span class="vline"></span>'+money(t.prf)+'<span class="vline"></span><b>عرض في السجل</b>';
+  cj._date=e.date;
+  cj.hidden=false;
   clearTimeout(tipT);tipT=setTimeout(hideTip,3000);
 }
 function hideTip(){
   clearTimeout(tipT);
   $('chartTip').classList.remove('show');
+  var cj=$('chartJump');cj.hidden=true;cj._date=null;
   if(chartState.sel!==null){chartState.sel=null;drawChart('final');}
 }
+$('chartJump').addEventListener('click',function(){
+  var d=$('chartJump')._date;
+  if(d)jumpToRow(d);
+});
 $('weekChart').addEventListener('click',function(ev){
   var r=$('weekChart').getBoundingClientRect(),px=ev.clientX-r.left;
-  var hit=-1;
-  chartState.bars.forEach(function(b,i){if(px>=b.x-6&&px<=b.x+b.w+6)hit=i;});
+  /* N8: التقاط أقرب عمود دائمًا — بلا مناطق ميتة بين الأعمدة */
+  var hit=-1,best=Infinity;
+  chartState.bars.forEach(function(b,i){var d=Math.abs(px-b.cx);if(d<best){best=d;hit=i;}});
   if(hit>=0){showTip(hit);}else{hideTip();}
 });
 $('weekChart').addEventListener('keydown',function(ev){
   var n=chartState.bars.length;if(!n)return;
   var cur=chartState.sel===null?-1:chartState.sel, next=null;
-  if(ev.key==='ArrowRight')next=Math.min(n-1,cur+1);
-  else if(ev.key==='ArrowLeft')next=Math.max(0,cur-1);
+  /* N7: في RTL العمود الأقدم يمينًا — السهم الأيمن يتحرك للفهرس الأقل (الأقدم) */
+  if(ev.key==='ArrowRight')next=Math.max(0,cur-1);
+  else if(ev.key==='ArrowLeft')next=Math.min(n-1,cur+1);
   else if(ev.key==='Escape'){hideTip();return;}
   else return;
   ev.preventDefault();
   if(next!==null)showTip(next);
 });
+function syncPressed(sel){
+  document.querySelectorAll(sel).forEach(function(x){
+    x.setAttribute('aria-pressed',x.classList.contains('on')?'true':'false');
+  });
+}
 document.querySelectorAll('[data-range]').forEach(function(b){
   b.addEventListener('click',function(){
     document.querySelectorAll('[data-range]').forEach(function(x){x.classList.remove('on');});
     b.classList.add('on');
+    syncPressed('[data-range]');
     chartRange=b.getAttribute('data-range');
     hideTip();drawChart('calm');
   });
@@ -1282,13 +1693,17 @@ function countGrand(to){
   requestAnimationFrame(step);
 }
 function renderHistory(enterId){
-  var asc=loadHist().sort(function(a,b){return a.date<b.date?-1:1;});
+  buildWeekBadge();
+  renderAch();
+  /* الخط الأحمر: نسخة قبل الفرز — لا طفرة على الذاكرة المشتركة */
+  var asc=getHist().slice().sort(function(a,b){return a.date<b.date?-1:1;});
+  var notes=loadNotes();
   var serial={};
   asc.forEach(function(e,i){serial[e.id]=i+1;});
   var h=asc.slice().reverse();
   var box=$('history'),gt=0;
   if(!h.length){
-    box.innerHTML='<div class="hist-empty">دفترك فاضي للحين.<br>زِد العدّاد فوق وسجّل أول ربح</div>';
+    box.innerHTML='<div class="hist-empty">دفترك فاضي للحين.<br>زِد العدّاد فوق واختم أول يوم</div>';
     var ht=$('grandTotal');ht.classList.remove('on');
     setTimeout(function(){if(!$('grandTotal').classList.contains('on'))$('grandTotal').style.display='none';},200);
     grandShown=0;return;
@@ -1299,25 +1714,34 @@ function renderHistory(enterId){
     var bits=[];
     if(e.g.qty>0)bits.push('جيميناي ×'+e.g.qty);
     if(e.d.qty>0)bits.push('دولينجو ×'+e.d.qty);
-    var vno=(serial[e.id]||0).toLocaleString('ar-EG');
-    html+='<div class="hrow'+(e.id===enterId?' enter':'')+'"><div class="hd"><div class="vno">قسيمة '+vno+'</div><div class="date">'+fmtDate(e.date)+'</div>'
-      +'<div class="sub">'+bits.join(' | ')+'<br>بيع '+money(t.rev)+' | كلفة '+money(t.cst)+'</div></div>'
+    var vno=(serial[e.id]||0).toLocaleString('en-US');
+    var noteLine=notes[e.date]?'<div class="note-line">'+esc(notes[e.date])+'</div>':'';
+    html+='<div class="hrow'+(e.id===enterId?' enter':'')+'" data-date="'+esc(e.date)+'"><div class="hd"><div class="vno">قسيمة '+vno+'</div><div class="date">'+esc(fmtDate(e.date))+'</div>'
+      +'<div class="sub">'+bits.join(' | ')+'<br>بيع '+money(t.rev)+' | كلفة '+money(t.cst)+'</div>'+noteLine+'</div>'
       +'<div class="hp">'+money(t.prf)+'<small>الربح</small></div>'
-      +'<button type="button" class="del" data-id="'+e.id+'" aria-label="حذف يوم '+fmtDate(e.date)+'">'
-      +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>'
+      +'<button type="button" class="note-btn" data-date="'+esc(e.date)+'" aria-label="أضف سطرًا ليوم '+esc(fmtDate(e.date))+'">سطر</button>'
+      +'<button type="button" class="del" data-id="'+esc(e.id)+'" aria-label="حذف يوم '+esc(fmtDate(e.date))+'">'
+      +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>'
       +'</button></div>';
   });
   box.innerHTML=html;
   var ht2=$('grandTotal');ht2.style.display='flex';
   requestAnimationFrame(function(){ht2.classList.add('on');});
   countGrand(gt);
+  box.querySelectorAll('.note-btn').forEach(function(b){
+    b.addEventListener('click',function(){openNoteModal(b.getAttribute('data-date'));});
+  });
   box.querySelectorAll('.del').forEach(function(b){
     b.addEventListener('click',function(){
       confirmModal('حذف اليوم','متأكد تبي تحذف هاليوم؟','احذف',function(){
         var row=b.closest('.hrow');
         function doDelete(){
-          saveHist(loadHist().filter(function(e){return e.id!==b.getAttribute('data-id');}));
+          setHist(getHist().filter(function(e){return e.id!==b.getAttribute('data-id');}));
+          /* F7: حذف اليوم يُحذف سطره تلقائيًا */
+          var nn=loadNotes(),rd=row?row.getAttribute('data-date'):null;
+          if(rd&&nn[rd]){delete nn[rd];saveNotes(nn);}
           renderHistory();drawChart('calm');updateStreak(false);updateGoalBar();
+          refreshSealedCard();updateNudge();
           toast('انحذف اليوم');
           var h2=$('histTitle');if(h2)h2.focus();
         }
@@ -1331,10 +1755,137 @@ function renderHistory(enterId){
   });
 }
 
+/* ---------- أدوات التاريخ ---------- */
+function addDays(iso,n){
+  return new Date(new Date(iso+'T12:00:00').getTime()+n*864e5).toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'});
+}
+
+/* ---------- القفز لصف اليوم في السجل (من الشارة المختومة/شارة الأسبوع/الرسم) ---------- */
+function jumpToRow(date){
+  var row=document.querySelector('.hrow[data-date="'+date+'"]');
+  if(!row)return;
+  row.scrollIntoView({behavior:reduced?'auto':'smooth',block:'center'});
+  row.classList.remove('row-hl');void row.offsetWidth;row.classList.add('row-hl');
+  /* C3-J1: نقل التركيز للصف حتى يصل مستخدم لوحة المفاتيح/قارئ الشاشة للسياق */
+  row.setAttribute('tabindex','-1');
+  row.focus({preventScroll:true});
+  setTimeout(function(){row.classList.remove('row-hl');},1300);
+}
+$('sbDate').addEventListener('click',function(){
+  jumpToRow($('day').value||todayRiyadh());
+});
+
+/* ---------- شارة الأسبوع: 7 مربعات (السبت ← الجمعة) تحت ترويسة «بيع اليوم» ---------- */
+function buildWeekBadge(){
+  var box=$('weekBadge');if(!box)return;
+  var h=loadHist();
+  if(!h.length){box.hidden=true;box.innerHTML='';return;}
+  var today=todayRiyadh(),wr=weekRange(today);
+  var byDate={};
+  h.forEach(function(e){byDate[e.date]=e;});
+  var names=['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+  var html='';
+  for(var i=0;i<7;i++){
+    var d=addDays(wr.from,i),e=byDate[d];
+    var isT=d===today,future=d>today,sealed=!!e;
+    var cls='wb'+(sealed?' sealed':'')+(isT?' today':'')+(future?' future':'');
+    /* C3-Z1: رقم اليوم المرئي جزء من التسمية البرمجية + copy #16/#17 */
+    var dnum=parseInt(d.slice(8,10),10);
+    var label=names[i]+' '+dnum+(isT?' (اليوم)':'')+': '+(sealed?('مختوم '+money(totals(e).prf)):(future?'ما جا':'ما انختم'));
+    var inner='<span aria-hidden="true">'+dnum+'</span>';
+    if(sealed)html+='<button type="button" class="'+cls+'" data-date="'+d+'" data-act="jump" aria-label="'+esc(label)+'">'+inner+'</button>';
+    /* F8: «ما انختم» غير المستقبلي زرٌّ يضبط التاريخ ويمرر للوحة — كزر «اختم أمس» */
+    else if(!future)html+='<button type="button" class="'+cls+'" data-date="'+d+'" data-act="fill" aria-label="'+esc(label)+'">'+inner+'</button>';
+    else html+='<span class="'+cls+'" role="img" aria-label="'+esc(label)+'">'+inner+'</span>';
+  }
+  box.hidden=false;box.innerHTML=html;
+  box.querySelectorAll('button').forEach(function(b){
+    var dd=b.getAttribute('data-date');
+    if(b.getAttribute('data-act')==='fill'){
+      b.addEventListener('click',function(){
+        $('day').value=dd;
+        disarmZeroGuard();
+        sealedSnap=null;
+        recalc();
+        var sp=$('salesPanel');
+        if(sp)sp.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});
+      });
+    }else{
+      b.addEventListener('click',function(){jumpToRow(dd);});
+    }
+  });
+}
+
+/* ---------- G3 — «هذا الأسبوع × الماضي»: سطر واحد تحت الرسم ---------- */
+var ARROW_UP='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 14V2"/><path d="M3 7l5-5 5 5"/></svg>';
+var ARROW_DOWN='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v12"/><path d="M3 9l5 5 5-5"/></svg>';
+var ARROW_FLAT='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 8h12"/></svg>';
+function updateWeekCmp(){
+  var box=$('weekCmp');if(!box)return;
+  var today=todayRiyadh(),wr=weekRange(today);
+  var pTo=prevDay(wr.from),pFrom=pTo;
+  for(var i=0;i<6;i++)pFrom=prevDay(pFrom);
+  var cur=0,prev=0;
+  loadHist().forEach(function(e){
+    var p=totals(e).prf;
+    if(e.date>=wr.from&&e.date<=today)cur+=p;
+    else if(e.date>=pFrom&&e.date<=pTo)prev+=p;
+  });
+  /* بلا بيانات أسبوع ماضٍ: السطر مخفي تمامًا — لا رسائل بديلة */
+  if(prev<=0){box.hidden=true;box.innerHTML='';return;}
+  var D=cur-prev,P=Math.round(Math.abs(D)/prev*100);
+  var cls,arrow,tail;
+  if(D>1){cls='up';arrow=ARROW_UP;tail='أعلى بـ '+fmt(D)+' ر.س ('+P+'%)';}
+  else if(D<-1){cls='down';arrow=ARROW_DOWN;tail='أقل بـ '+fmt(-D)+' ر.س ('+P+'%) لحد الآن';}
+  else{cls='flat';arrow=ARROW_FLAT;tail='نفس المستوى تقريبًا';}
+  box.className='week-cmp '+cls;
+  box.innerHTML=arrow+'<span>هذا الأسبوع <span class="num">'+fmt(cur)+' ر.س</span><span class="vline"></span>الماضي <span class="num">'+fmt(prev)+' ر.س</span>. '+tail+'</span>';
+  box.hidden=false;
+}
+
+/* ---------- G6 — رف الإنجازات: يُحسب من السجل عند كل renderHistory ---------- */
+function renderAch(){
+  var det=$('achDet'),body=$('achBody');
+  if(!det||!body)return;
+  var h=loadHist();
+  if(!h.length){det.hidden=true;det.removeAttribute('open');body.innerHTML='';return;}
+  det.hidden=false;
+  var asc=h.slice().sort(function(a,b){return a.date<b.date?-1:1;});
+  var pOf={};
+  asc.forEach(function(e){pOf[e.id]=totals(e).prf;});
+  var bestE=asc[0],all=0,moSums={};
+  asc.forEach(function(e){
+    var p=pOf[e.id];all+=p;
+    if(p>pOf[bestE.id])bestE=e;
+    var ym=e.date.slice(0,7);moSums[ym]=(moSums[ym]||0)+p;
+  });
+  /* أفضل أسبوع: أعلى مجموع لأي 7 أيام ميلادية متتالية */
+  var bestWk={sum:-1,from:null};
+  asc.forEach(function(e){
+    var to=addDays(e.date,6),s=0;
+    asc.forEach(function(x){if(x.date>=e.date&&x.date<=to)s+=pOf[x.id];});
+    if(s>bestWk.sum)bestWk={sum:s,from:e.date};
+  });
+  /* أفضل شهر ميلادي */
+  var bestMo={sum:-1,ym:null};
+  Object.keys(moSums).forEach(function(ym){if(moSums[ym]>bestMo.sum)bestMo={sum:moSums[ym],ym:ym};});
+  var moName=bestMo.ym||'';
+  try{moName=new Intl.DateTimeFormat('ar',{month:'long',year:'numeric',timeZone:'Asia/Riyadh'}).format(new Date(bestMo.ym+'-15T12:00:00'));}catch(e){}
+  function row(k,v,sub){
+    return '<div class="ach-row"><span class="k">'+k+'</span><span class="v num">'+v+(sub?'<span class="sub">'+sub+'</span>':'')+'</span></div>';
+  }
+  body.innerHTML=
+    row('أفضل يوم',money(pOf[bestE.id]),esc(fmtDate(bestE.date)))+
+    row('أفضل أسبوع',money(bestWk.sum),'من '+esc(fmtDate(bestWk.from,'short'))+' إلى '+esc(fmtDate(addDays(bestWk.from,6),'short')))+
+    row('أفضل شهر',money(bestMo.sum),esc(moName))+
+    row('المجموع الكلي',money(all),asc.length+' يوم مختوم');
+}
+
 /* ---------- السلسلة (E6b) ---------- */
-function computeStreak(){
-  var h=loadHist().sort(function(a,b){return a.date<b.date?-1:1;});
-  if(!h.length)return 0;
+function streakChain(){
+  /* الخط الأحمر: نسخة قبل الفرز — لا طفرة على الذاكرة المشتركة */
+  var h=getHist().slice().sort(function(a,b){return a.date<b.date?-1:1;});
+  if(!h.length)return{n:0,tip:null};
   var d=h[h.length-1].date,n=0;
   for(;;){
     var e=null;
@@ -1342,15 +1893,39 @@ function computeStreak(){
     if(!e||totals(e).prf<=0)break;
     n++;d=prevDay(d);
   }
-  return n;
+  return{n:n,tip:h[h.length-1].date};
 }
+function computeStreak(){return streakChain().n;}
+function daysBetween(a,b){return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5);}
 function updateStreak(popIt){
-  var n=computeStreak(),badge=$('streakBadge');
-  if(n>=2){
-    $('streakTxt').textContent=n+' أيام ربح ورا بعض';
-    badge.classList.add('show');
+  var ch=streakChain(),badge=$('streakBadge'),txt=$('streakTxt');
+  /* السلسلة «حية» فقط إذا وصلت لأمس أو اليوم — غير ذلك فهي مكسورة */
+  var fresh=!!(ch.tip&&daysBetween(ch.tip,todayRiyadh())<=1);
+  if(ch.n>=2&&fresh){
+    txt.textContent=ch.n+' يوم ختم ورا بعض';
+    badge.classList.add('show');badge.classList.remove('dim');
+    try{localStorage.removeItem(BROKE);}catch(e){}
     if(popIt&&!reduced){badge.classList.remove('pop');void badge.offsetWidth;badge.classList.add('pop');}
-  }else{badge.classList.remove('show');}
+    return;
+  }
+  if(fresh){
+    /* سلسلة جديدة بدأت (وصلت لأمس/اليوم لكنها أقصر من يومين) — الكسر القديم انتهى */
+    try{localStorage.removeItem(BROKE);}catch(e){}
+    badge.classList.remove('show');badge.classList.remove('dim');
+    return;
+  }
+  /* كسر السلسلة بلطف: شارة رمادية خافتة 24 ساعة بدل الاختفاء الصامت */
+  var brk=null;try{brk=JSON.parse(localStorage.getItem(BROKE));}catch(e){brk=null;}
+  if(ch.n>=2&&!fresh){
+    if(!brk||brk.n!==ch.n){brk={n:ch.n,at:Date.now()};try{localStorage.setItem(BROKE,JSON.stringify(brk));}catch(e){}}
+  }
+  if(brk&&Date.now()-brk.at<864e5){
+    txt.textContent='سلسلة الـ'+brk.n+' يوم خلصت. نبدأ وحدة جديدة؟';
+    badge.classList.add('show');badge.classList.add('dim');
+  }else{
+    badge.classList.remove('show');badge.classList.remove('dim');
+    try{localStorage.removeItem(BROKE);}catch(e){}
+  }
 }
 
 /* ---------- التأكيد داخل التطبيق ---------- */
@@ -1367,16 +1942,38 @@ function hideConfirm(){$('cmodal').classList.remove('show');cmCb=null;if(cmLastF
 $('cmOk').addEventListener('click',function(){var cb=cmCb;hideConfirm();if(cb)cb();});
 $('cmCancel').addEventListener('click',hideConfirm);
 $('cmodal').addEventListener('click',function(ev){if(ev.target===$('cmodal'))hideConfirm();});
+/* حبس Tab داخل الحوار أثناء ظهوره (N2): تنقل دائري بين زرّي التأكيد والإلغاء فقط */
+$('cmodal').addEventListener('keydown',function(ev){
+  if(ev.key!=='Tab'||!$('cmodal').classList.contains('show'))return;
+  var f=[$('cmOk'),$('cmCancel')],i=f.indexOf(document.activeElement);
+  if(ev.shiftKey){
+    if(i<=0){f[1].focus();ev.preventDefault();}
+  }else{
+    if(i===-1||i===f.length-1){f[0].focus();ev.preventDefault();}
+  }
+});
+/* C4-N1: حبس Tab داخل حوار «سطر اليوم» — نفس نمط #cmodal */
+$('noteModal').addEventListener('keydown',function(ev){
+  if(ev.key!=='Tab'||!$('noteModal').classList.contains('show'))return;
+  var f=[$('noteText'),$('noteSave'),$('noteCancel')],i=f.indexOf(document.activeElement);
+  if(ev.shiftKey){
+    if(i<=0){f[2].focus();ev.preventDefault();}
+  }else{
+    if(i===-1||i===f.length-1){f[0].focus();ev.preventDefault();}
+  }
+});
 
 /* ---------- الاحتفال — ضربة الختم (art-direction §4) ---------- */
 var MILESTONES=[{t:25,n:'يوم موفق',cls:'m25'},{t:50,n:'يوم ذهبي',cls:'m50'},{t:100,n:'يوم أسطوري',cls:'m100'}];
 var STAR='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>';
 var CROWN='<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 7l4 4 5-6 5 6 4-4-1.5 10h-15z"/></svg>';
-var STREAK_MILES={3:'بداية موفقة',7:'أسبوع كامل',14:'أسبوعين وحش',30:'شهر أسطوري'};
-function partyBurst(){
+var STREAK_MILES={3:'بداية موفقة',7:'أسبوع كامل',14:'أسبوعين من الثبات',30:'شهر من الانضباط'};
+function partyBurst(cx,cy){
   if(reduced)return;
-  var card=$('popCard').getBoundingClientRect();
-  var cx=card.left+card.width/2, cy=card.top+card.height/2;
+  if(cx==null||cy==null){
+    var card=$('popCard').getBoundingClientRect();
+    cx=card.left+card.width/2;cy=card.top+card.height/2;
+  }
   var cv=document.createElement('canvas');cv.id='partyCanvas';cv.setAttribute('aria-hidden','true');
   var dpr=Math.min(2,window.devicePixelRatio||1);
   cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;
@@ -1456,10 +2053,16 @@ function celebrate(amount,opts){
     }
   }
   if(opts.streakMile){
-    stm.innerHTML=STAR+'<span>'+opts.streakMile+' — '+computeStreak()+' أيام ربح ورا بعض</span>';
+    stm.innerHTML=STAR+'<span>'+opts.streakMile+'. '+computeStreak()+' يوم ورا بعض</span>';
     stm.classList.add('show');
   }
   countUp($('popAmt'),amount,800,'+');
+  /* C2-C1: إعلان polite واحد مركّب — الختم + ما تحقق من إنجازات */
+  var celebBits=[(opts.dayLabel?'انختم في '+opts.dayLabel+'. ربح ':'ختمت اليوم. ربح ')+money(amount)];
+  if(opts.record)celebBits.push('رقم قياسي جديد');
+  if(opts.mile)celebBits.push(opts.mile.n);
+  if(opts.streakMile)celebBits.push(opts.streakMile+'. '+computeStreak()+' يوم ورا بعض');
+  $('srLive').textContent=celebBits.join('، ');
   ov.classList.remove('leaving');
   void ov.offsetWidth;
   ov.classList.add('show');
@@ -1476,6 +2079,7 @@ function hideCeleb(){
 $('overlay').addEventListener('click',function(){clearTimeout(ovT);hideCeleb();});
 document.addEventListener('keydown',function(ev){
   if(ev.key==='Escape'){
+    if(zeroArmed){disarmZeroGuard();return;}
     if($('cmodal').classList.contains('show'))hideConfirm();
     else if($('overlay').classList.contains('show')){clearTimeout(ovT);hideCeleb();}
   }
@@ -1486,7 +2090,9 @@ var amb={raf:null,parts:[],profit:0,last:0,cv:null,x:null,dpr:1};
 function ambInit(){
   var cv=$('dust');amb.dpr=Math.min(2,window.devicePixelRatio||1);
   function size(){cv.width=innerWidth*amb.dpr;cv.height=innerHeight*amb.dpr;cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';}
-  size();window.addEventListener('resize',size);
+  size();
+  /* L2: مستمع resize مرة واحدة فقط — لا تراكم مع طول الجلسة */
+  if(!amb._rsz){amb._rsz=true;window.addEventListener('resize',size);}
   amb.parts=[];
   for(var i=0;i<12;i++)amb.parts.push({
     x:Math.random()*innerWidth,y:Math.random()*innerHeight,
@@ -1529,16 +2135,29 @@ function frenzyTick(stepper,delta){
   if(tapTimes.length>=5){
     if(!stepper._pool){
       stepper._pool=[];
-      for(var i=0;i<6;i++){var c=document.createElement('span');c.className='fchip';stepper.appendChild(c);stepper._pool.push(c);}
+      for(var i=0;i<6;i++){var c=document.createElement('span');c.className='fchip';c.setAttribute('aria-hidden','true');stepper.appendChild(c);stepper._pool.push(c);}
       stepper._pi=0;
-      var tag=document.createElement('span');tag.className='frenzy-tag';tag.textContent='إيقاع ناري';stepper.appendChild(tag);stepper._tag=tag;
+      var tag=document.createElement('span');tag.className='frenzy-tag';tag.textContent='إيقاع ناري';tag.setAttribute('aria-hidden','true');stepper.appendChild(tag);stepper._tag=tag;
     }
     var chip=stepper._pool[stepper._pi++%6];
     chip.textContent=delta>0?'+1':'−1';
     chip.style.color=delta>0?'var(--mint-green)':'var(--seal-red)';
     chip.classList.remove('fly');void chip.offsetWidth;chip.classList.add('fly');
+    /* تلميح الضغط المطوّل — مرة واحدة فقط عند رصد نمط «العدّ اليدوي المتعب» */
+    if(tapTimes.length===5&&stepper._tag){
+      try{
+        if(!localStorage.getItem(LPH)){
+          localStorage.setItem(LPH,'1');
+          var hint=stepper._tag;
+          hint.textContent='جرّب الضغط المطوّل للعدّ السريع';
+          hint.classList.add('show');
+          setTimeout(function(){if(hint){hint.classList.remove('show');hint.textContent='إيقاع ناري';}},2200);
+        }
+      }catch(e){}
+    }
   }
   if(tapTimes.length===10&&stepper._tag){
+    stepper._tag.textContent='إيقاع ناري';
     stepper._tag.classList.add('show');
     setTimeout(function(){if(stepper._tag)stepper._tag.classList.remove('show');},1200);
     tapTimes=[];
@@ -1560,29 +2179,28 @@ document.querySelectorAll('.stepper button').forEach(function(b){
     doStep(b,s);
     frenzyTick(b.closest('.stepper'),s);
   });
-  if(s===1){
-    var t1=null,iv=null,steps=0,lpActive=false;
-    function stop(){clearTimeout(t1);clearTimeout(iv);t1=iv=null;lpActive=false;}
-    b.addEventListener('pointerdown',function(){
-      stop();steps=0;lpActive=false;
-      t1=setTimeout(function(){
-        lpActive=true;
-        var delay=300;
-        function tick(){
-          doStep(b,1);steps++;
-          if(steps%5===0)buzz(6);
-          delay=Math.max(80,delay*0.82);
-          iv=setTimeout(tick,delay);
-          if(steps>120)stop();
-        }
-        tick();
-      },400);
-    });
-    ['pointerup','pointerleave','pointercancel'].forEach(function(ev){
-      b.addEventListener(ev,function(){if(lpActive)b._lp=true;stop();});
-    });
-    b.addEventListener('contextmenu',function(ev){ev.preventDefault();});
-  }
+  /* F13: الضغط المطوّل على + و− معًا — تماثل تام (doStep يكبح عند الصفر) */
+  var t1=null,iv=null,steps=0,lpActive=false;
+  function stop(){clearTimeout(t1);clearTimeout(iv);t1=iv=null;lpActive=false;}
+  b.addEventListener('pointerdown',function(){
+    stop();steps=0;lpActive=false;
+    t1=setTimeout(function(){
+      lpActive=true;
+      var delay=300;
+      function tick(){
+        doStep(b,s);steps++;
+        if(steps%5===0)buzz(6);
+        delay=Math.max(80,delay*0.82);
+        iv=setTimeout(tick,delay);
+        if(steps>120)stop();
+      }
+      tick();
+    },400);
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(function(ev){
+    b.addEventListener(ev,function(){if(lpActive)b._lp=true;stop();});
+  });
+  b.addEventListener('contextmenu',function(ev){ev.preventDefault();});
 });
 ['g_qty','d_qty'].forEach(function(id){$(id).addEventListener('input',recalc);});
 
@@ -1595,37 +2213,206 @@ function cfgChanged(){
 $('goalAmt').addEventListener('input',function(){
   var g={amount:num('goalAmt'),period:(document.querySelector('[data-goalperiod].on')||{}).getAttribute?document.querySelector('[data-goalperiod].on').getAttribute('data-goalperiod'):'week'};
   saveGoal(g.amount>0?g:null);
-  localStorage.removeItem(GOALHIT);
+  setGoalHit(null);
   updateGoalBar();
 });
 
 /* ---------- نفس مبيعات أمس ---------- */
 $('ydayBtn').addEventListener('click',function(){
-  var h=loadHist().sort(function(a,b){return a.date<b.date?-1:1;});
-  if(!h.length){toast('دفترك فاضي للحين. زِد العدّاد فوق وسجّل أول ربح');return;}
-  var e=h[h.length-1];
+  /* الخط الأحمر: نسخة قبل الفرز — لا طفرة على الذاكرة المشتركة */
+  var h=getHist().slice().sort(function(a,b){return a.date<b.date?-1:1;});
+  var today=todayRiyadh(),e=null;
+  /* F6: أحدث إدخال بتاريخ أصغر من اليوم — لا مبيعات اليوم نفسه */
+  for(var i=h.length-1;i>=0;i--){if(h[i].date<today){e=h[i];break;}}
+  if(!e){toast('أمس ما انختم. الدفتر فاضي');return;}
   $('g_qty').value=e.g.qty;$('d_qty').value=e.d.qty;
   recalc();
   toast('عبّيت لك مبيعات '+fmtDate(e.date,'short'));
 });
 
+/* ---------- المسودة التلقائية: حفظ صامت مع كل إدخال، واستعادة لليوم نفسه فقط ---------- */
+function saveDraft(c){
+  try{localStorage.setItem(DRAFT,JSON.stringify({date:$('day').value||todayRiyadh(),g:c.gq,d:c.dq}));}catch(e){}
+}
+function restoreDraft(){
+  var d=null;try{d=JSON.parse(localStorage.getItem(DRAFT));}catch(e){d=null;}
+  /* F15: تُستعاد المسودة طالما التاريخ المختار لم يتغيّر — لا اليوم فقط */
+  if(!d||d.date!==($('day').value||todayRiyadh()))return;
+  $('g_qty').value=Math.max(0,parseInt(d.g,10)||0);
+  $('d_qty').value=Math.max(0,parseInt(d.d,10)||0);
+}
+
+/* ---------- همسة الليل: سطر تحت العدّاد بعد 9م فقط، يختفي وحده ---------- */
+function riyadhHour(){
+  try{var h=parseInt(new Date().toLocaleString('en-US',{timeZone:'Asia/Riyadh',hour:'2-digit',hour12:false}),10);return h===24?0:h;}
+  catch(e){return new Date().getHours();}
+}
+var WHX=LS+'.whisperx';
+function updateWhisper(h){
+  h=h||getHist();
+  var w=$('whisper');if(!w)return;
+  var today=todayRiyadh(),sealed=false,hh=h;
+  for(var i=0;i<hh.length;i++)if(hh[i].date===today){sealed=true;break;}
+  var started=(parseFloat($('g_qty').value)||0)>0||(parseFloat($('d_qty').value)||0)>0;
+  /* إسكات الليلة فقط: flag بتاريخ اليوم يُمسح تلقائيًا بانتهاء اليوم */
+  var dismissed=false;
+  try{dismissed=localStorage.getItem(WHX)===today;}catch(e){}
+  var showIt=!sealed&&!started&&riyadhHour()>=21&&!dismissed;
+  var txt=showIt?'لسا ما ختمت اليوم. دقيقة وحدة وخلاص':'';
+  if($('whisperTxt').textContent!==txt){
+    $('whisperTxt').textContent=txt;
+    /* C2-W1: الإعلان الصوتي خارج العنصر المرئي (يُخفى في وضع slim) */
+    $('whisperSr').textContent=txt;
+  }
+  w.hidden=!showIt;
+}
+$('whisperX').addEventListener('click',function(){
+  try{localStorage.setItem(WHX,todayRiyadh());}catch(e){}
+  updateWhisper();
+  var sb=$('stampBtn');if(sb)sb.focus();
+});
+
+/* ---------- F4 — وين تركّز؟ نسبة ربح جيميناي/دولينجو (آخر 30 يوم) ---------- */
+function updateFocusBar(){
+  var box=$('focusBar');if(!box)return;
+  var t=todayRiyadh();
+  var from=new Date(new Date(t+'T12:00:00').getTime()-29*864e5).toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'});
+  var gp=0,dp=0,days=0;
+  loadHist().forEach(function(e){
+    if(e.date<from||e.date>t)return;
+    days++;
+    gp+=e.g.price*e.g.qty-e.g.costUSD*e.rate*e.g.qty;
+    dp+=e.d.price*e.d.qty-e.d.costUSD*e.rate*e.d.qty;
+  });
+  var tot=gp+dp;
+  if(tot<=0||days<2){box.hidden=true;return;}
+  box.hidden=false;
+  var gpc=Math.round(gp/tot*100),dpc=100-gpc;
+  $('fbG').style.width=gpc+'%';$('fbD').style.width=dpc+'%';
+  $('fbTrack').setAttribute('aria-label','جيميناي '+gpc+'%، دولينجو '+dpc+'% من ربح آخر 30 يوم');
+  var cap=' <span class="fb-cap">من ربح آخر 30 يوم</span>';
+  var txt;
+  if(gpc===100)txt='كل ربحك آخر 30 يوم من جيميناي. يستاهل التركيز';
+  else if(dpc===100)txt='كل ربحك آخر 30 يوم من دولينجو. يستاهل التركيز';
+  else txt='جيميناي <span class="num">'+gpc+'%</span><br>دولينجو <span class="num">'+dpc+'%</span>'+cap;
+  $('fbTxt').innerHTML=txt;
+}
+
+/* ---------- حارس الختم الصفري: تأكيد من خطوتين داخل زر الشريط نفسه ---------- */
+var zeroArmed=false;
+function armZeroGuard(){
+  /* Q2: حارس ذاتي — لا تسليح مكرر */
+  if(zeroArmed)return;
+  zeroArmed=true;
+  var btn=$('stampBtn');
+  btn.textContent='أكيد، اختم';
+  /* C3-Z1: النص المرئي جزء من التسمية البرمجية */
+  btn.setAttribute('aria-label','أكيد، اختم. تأكيد اليوم الصفري');
+  btn.classList.add('zero-arm');
+  $('zeroNo').hidden=false;
+  $('copyBtn').hidden=true;
+  var sb=$('sbDate');
+  sb.textContent='يوم صفري بيكسر السلسلة. أكيد؟';
+  sb.classList.add('zero-q');
+  $('sbGhost').hidden=true;
+  $('srLive').textContent='يوم صفري بيكسر السلسلة. أكيد؟';
+  document.addEventListener('pointerdown',zeroOutside,true);
+}
+function zeroOutside(ev){
+  if(ev.target&&ev.target.closest&&(ev.target.closest('#stampBtn')||ev.target.closest('#zeroNo')))return;
+  disarmZeroGuard();
+}
+function disarmZeroGuard(){
+  if(!zeroArmed)return;
+  zeroArmed=false;
+  document.removeEventListener('pointerdown',zeroOutside,true);
+  var btn=$('stampBtn');
+  btn.removeAttribute('aria-label');
+  btn.classList.remove('zero-arm');
+  $('zeroNo').hidden=true;
+  $('copyBtn').hidden=false;
+  $('sbDate').classList.remove('zero-q');
+  /* نص الزر وشارة التاريخ الشبحي يُشتقان من التاريخ الحالي */
+  updateSavebarDate();
+}
+$('zeroNo').addEventListener('click',function(){
+  disarmZeroGuard();
+  var sb=$('stampBtn');if(sb)sb.focus();
+});
+
 /* ---------- الحفظ ---------- */
 var lastSaved=null;
-function updateSavebarDate(){
+function undoSave(entry,gq,dq,oldEntry){
+  var h=getHist().filter(function(e){return e.id!==entry.id;});
+  /* F2: التراجع بعد «استبدال» يعيد الإدخال القديم بنفس الـid (لا يحذف اليوم) */
+  if(oldEntry)h.push(oldEntry);
+  setHist(h);
+  /* انتهت لحظة الختم — القفل يُفك فورًا */
+  stampLocked=false;
+  sealedSnap=null; /* F3(ب): التراجع يعيد العدّادات المستعادة للواجهة */
+  $('g_qty').value=gq;$('d_qty').value=dq;
+  recalc();renderHistory();drawChart('calm');updateStreak(false);updateGoalBar();
+  refreshSealedCard();
+  toast('رجّعنا لك العدّادات');
+}
+function updateSavebarDate(h){
+  /* حارس الختم الصفري مسلّح: سطر السؤال يبقى حتى الإلغاء/التأكيد */
+  if(zeroArmed)return;
+  h=h||getHist();
   var date=$('day').value||todayRiyadh();
-  $('sbDate').textContent='سيُحفظ في: '+(date===todayRiyadh()?'اليوم':fmtDate(date,'short'));
+  var today=todayRiyadh(),isToday=date===today,isYday=date===prevDay(today);
+  var sb=$('sbDate'),entry=null,btn=$('stampBtn'),ghost=$('sbGhost');
+  for(var i=0;i<h.length;i++)if(h[i].date===date){entry=h[i];break;}
+  /* حارس التاريخ الشبحي: إعلان السياق ملازمًا لزر الختم */
+  if(!isToday){
+    ghost.hidden=false;
+    ghost.textContent='بتختم في: '+(isYday?'أمس':fmtDate(date,'short'));
+    btn.textContent=isYday?'اختم أمس':'اختم '+fmtDate(date,'short');
+  }else{
+    ghost.hidden=true;
+    btn.textContent='اختم اليوم';
+  }
+  if(entry){
+    /* الشارة زرٌّ يقفز لسجلّ اليوم — النص يحمل الربح (copy #9/#10) */
+    var lbl=(isToday?'اليوم مختوم':'مختوم')+'. ربح '+money(totals(entry).prf);
+    sb.textContent=lbl;
+    sb.classList.add('sealed');
+    sb.disabled=false;
+    sb.setAttribute('aria-label',lbl+'. انتقل لسجل اليوم');
+  }else{
+    sb.textContent='بتختم في: '+(isToday?'اليوم':fmtDate(date,'short'));
+    sb.classList.remove('sealed');
+    sb.disabled=true;
+    sb.removeAttribute('aria-label');
+  }
 }
 function doSave(){
+  /* §4: تجاهل الضغطة المزدوجة — الزر صامت حتى انتهاء لحظة الختم كاملة */
+  if(stampLocked)return;
+  /* حوار مفتوح أصلًا — لا تُفتح نسخة ثانية فوقه */
+  if($('cmodal').classList.contains('show'))return;
+  /* F4: اليوم مختوم وبطاقته ظاهرة → الزر الكبير = «تعديل» (لا طريق مسدود) */
+  if(!$('sealedCard').hidden&&(($('day').value||todayRiyadh())===todayRiyadh())){$('sealedEdit').click();return;}
+  /* الضغطة الثانية على «أكيد، اختم» تُتمّ الختم الصفري */
+  if(zeroArmed){disarmZeroGuard();doSaveReal(true);return;}
+  doSaveReal(false);
+}
+var stampLocked=false;
+function doSaveReal(skipZeroGuard){
   var c=current(), date=$('day').value||todayRiyadh();
   if(c.gq===0&&c.dq===0){
     var btn=$('stampBtn');
     btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake');
-    toast('ما بعت شي للحين. زِد العدّاد أول');
+    toastErr('ما بعت شي للحين. زِد العدّاد أول');
     return;
   }
   var existing=loadHist().filter(function(e){return e.date===date;})[0];
+  /* حارس الختم الصفري: ربح 0 بلا إدخال محفوظ لنفس التاريخ → تسليح التأكيد، بلا ختم الآن */
+  if(!skipZeroGuard&&c.prf===0&&!existing){armZeroGuard();return;}
   function proceed(){
-    var h=loadHist().filter(function(e){return e.date!==date;});
+    /* §4: من هنا حتى انتهاء لحظة الختم كاملة — الزر صامت */
+    stampLocked=true;
+    var h=getHist().filter(function(e){return e.date!==date;});
     var brk=brokenMiles(),newMiles=MILESTONES.filter(function(m){return c.prf>=m.t&&brk.indexOf(m.t)<0;});
     var mile=newMiles.length?newMiles[newMiles.length-1]:null;
     if(newMiles.length)localStorage.setItem(MILES,JSON.stringify(brk.concat(newMiles.map(function(m){return m.t;}))));
@@ -1634,14 +2421,38 @@ function doSave(){
     var entry={id:'e'+Date.now(),date:date,rate:c.cfg.rate,
       g:{price:c.cfg.g_price,costUSD:c.cfg.g_cost,qty:c.gq},
       d:{price:c.cfg.d_price,costUSD:c.cfg.d_cost,qty:c.dq}};
-    h.push(entry);saveHist(h);
+    h.push(entry);setHist(h);
     lastSaved=entry;
+    pendingUndoEntry=entry;
+    editingSealed=false;
     var streakAfter=computeStreak();
     var streakMile=STREAK_MILES[streakAfter]?STREAK_MILES[streakAfter]:null;
-    celebrate(c.prf,{mile:mile,record:record,streakMile:streakMile});
-    setTimeout(function(){flyNumber(c.prf);},reduced?0:120);
+    /* الاحتفال الكامل للحظات التي تستحقه فقط: أول 3 حفظات / عتبة / قياسي / معلم سلسلة */
+    var nSaves=0;try{nSaves=parseInt(localStorage.getItem(SAVES),10)||0;}catch(e){}
+    nSaves++;try{localStorage.setItem(SAVES,String(nSaves));}catch(e){}
+    var big=(nSaves<=3)||!!mile||record||!!streakMile;
     var gq=c.gq,dq=c.dq;
+    function undoFn(){undoSave(entry,gq,dq,existing||null);}
+    /* copy #8: تنبيه ما بعد الختم — اليوم الصفري يُحتفى بحضوره.
+       حارس التاريخ: عند الاختلاف عن اليوم يُذكر التاريخ في التنبيه */
+    var isToday=date===todayRiyadh(),isYday=date===prevDay(todayRiyadh());
+    var dayLabel=isToday?null:(isYday?'أمس':fmtDate(date,'short'));
+    var savedLabel=c.prf===0
+      ?(isToday?'ختمت اليوم. الحضور هو الإنجاز':'انختم في '+dayLabel+'. الحضور هو الإنجاز')
+      :(isToday?'ختمت اليوم. ربح '+money(c.prf):'انختم في '+dayLabel+'. ربح '+money(c.prf));
+    if(big){
+      celebrate(c.prf,{mile:mile,record:record,streakMile:streakMile,dayLabel:dayLabel});
+      setTimeout(function(){flyNumber(c.prf);},reduced?0:120);
+    }else{
+      /* ختم خفيف للحفظ الروتيني: جسيمات ذهبية سريعة بلا حجب + تنبيه فوري */
+      if(!reduced){var sb2=$('stampBtn').getBoundingClientRect();partyBurst(sb2.left+sb2.width/2,sb2.top);buzz(15);}
+      toastSaved(savedLabel,entry,date,undoFn);
+    }
     $('g_qty').value=0;$('d_qty').value=0;
+    /* حارس التاريخ الشبحي: التاريخ المخصص مهمة لمرة واحدة — عودة لليوم بعد كل ختم */
+    $('day').value=todayRiyadh();
+    /* F3: لقطة الربح المختوم — الـhero والشريط يثبتان عليها حتى تعديل/تراجع */
+    sealedSnap={prf:c.prf,rev:c.rev,cst:c.cst};
     recalc();
     var delay=reduced?0:620;
     setTimeout(function(){
@@ -1649,18 +2460,19 @@ function doSave(){
       drawChart('calm');
       updateStreak(true);
       updateGoalBar();
+      updateNudge();
+      refreshSealedCard();
     },delay);
-    setTimeout(function(){
-      toastUndo('انحفظ اليوم',function(){
-        saveHist(loadHist().filter(function(e){return e.id!==entry.id;}));
-        $('g_qty').value=gq;$('d_qty').value=dq;
-        recalc();renderHistory();drawChart('calm');updateStreak(false);updateGoalBar();
-        toast('رجّعنا لك العدّادات');
-      });
-    },reduced?1300:1600);
+    if(big){
+      setTimeout(function(){toastSaved(savedLabel,entry,date,undoFn);},reduced?1300:1600);
+    }
+    /* §4: فك القفل بعد انتهاء الاحتفال + نافذة التراجع (8 ثوانٍ) */
+    setTimeout(function(){stampLocked=false;},reduced?(big?9500:8200):(big?9800:8200));
+    /* المسودة أُنجزت — تُمسح بعد الختم */
+    try{localStorage.removeItem(DRAFT);}catch(e){}
   }
   if(existing){
-    confirmModal('يوم محفوظ','هذا اليوم محفوظ (ربح '+money(totals(existing).prf)+') — تبي تستبدله؟','استبدال',proceed);
+    confirmModal('يوم مختوم','هاليوم مختوم بربح '+money(totals(existing).prf)+'. تبي تستبدله؟','استبدال',proceed);
   }else proceed();
 }
 $('stampBtn').addEventListener('click',doSave);
@@ -1668,7 +2480,7 @@ $('stampBtn').addEventListener('click',doSave);
 /* ---------- نسخ الملخص (من البيانات المحفوظة — إصلاح usability #1) ---------- */
 function summaryText(e,date){
   var t=totals(e);
-  var L=['حصاد اليوم — '+fmtDate(date)];
+  var L=['حصاد اليوم: '+fmtDate(date)];
   if(e.g.qty>0)L.push('جيميناي: '+e.g.qty+' × '+fmt(e.g.price)+' = '+fmt(e.g.price*e.g.qty)+' (كلفة '+fmt(e.g.costUSD*e.rate*e.g.qty)+' ← ربح '+fmt(e.g.price*e.g.qty-e.g.costUSD*e.rate*e.g.qty)+')');
   if(e.d.qty>0)L.push('دولينجو: '+e.d.qty+' × '+fmt(e.d.price)+' = '+fmt(e.d.price*e.d.qty)+' (كلفة '+fmt(e.d.costUSD*e.rate*e.d.qty)+' ← ربح '+fmt(e.d.price*e.d.qty-e.d.costUSD*e.rate*e.d.qty)+')');
   L.push('الصافي: '+money(t.prf));
@@ -1683,7 +2495,11 @@ $('copyBtn').addEventListener('click',function(){
     var e=h.filter(function(x){return x.date===date;})[0]||(lastSaved&&lastSaved.date===date?lastSaved:null);
     if(e)txt=summaryText(e,date);
   }
-  if(!txt){toast('ما بعت شي للحين. زِد العدّاد أول');return;}
+  if(!txt){toastErr('ما بعت شي للحين. زِد العدّاد أول');return;}
+  doCopyText(txt);
+});
+/* النسخ الفعلي للحافظة + التغذية الراجعة (يُستخدم من زر النسخ وتنبيه ما بعد الختم) */
+function doCopyText(txt){
   function done(){
     toast('انسخ. الصقه وين ما تبي');
     buzz(10);
@@ -1694,11 +2510,200 @@ $('copyBtn').addEventListener('click',function(){
       $('copyBtn').classList.remove('ok');
     },1800);
   }
-  function fb(){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){toast('ما انسخ تلقائيًا. انسخه يدويًا');}document.body.removeChild(ta);}
+  function fb(){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){toastErr('ما انسخ لحاله. انسخه يدويًا');}document.body.removeChild(ta);}
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(done,fb);else fb();
+}
+
+$('day').addEventListener('change',function(){
+  disarmZeroGuard();
+  /* F5: اختيار تاريخ له إدخال مختوم يعبّئ العدّادات من المحفوظ لا من الصفر */
+  var d=$('day').value,entry=null,h=getHist();
+  for(var i=0;i<h.length;i++)if(h[i].date===d){entry=h[i];break;}
+  if(entry){$('g_qty').value=entry.g.qty;$('d_qty').value=entry.d.qty;}
+  sealedSnap=null;
+  recalc();
 });
 
-$('day').addEventListener('change',updateSavebarDate);
+/* ---------- بانر إنقاذ أمس (G4-lite): الحالة 2 فقط — همسة الليل تغطي التذكير ---------- */
+function updateNudge(){
+  var bar=$('nudgeBar');if(!bar)return;
+  var today=todayRiyadh(),y=prevDay(today),h=getHist();
+  var ySealed=false,tSealed=false;
+  for(var i=0;i<h.length;i++){if(h[i].date===y)ySealed=true;else if(h[i].date===today)tSealed=true;}
+  var dismissed=false;
+  try{dismissed=localStorage.getItem(NUDGE)===today;}catch(e){}
+  /* القاعدة المحفوظة: لا بانر إذا اليوم مختوم — الإنقاذ يُعرض قبل ختم اليوم فقط */
+  bar.hidden=!!(ySealed||tSealed||dismissed);
+}
+$('nudgeStamp').addEventListener('click',function(){
+  var y=prevDay(todayRiyadh());
+  $('day').value=y;
+  disarmZeroGuard();
+  updateSavebarDate();
+  /* اختفاء البانر بلا flag — التاريخ الشبحي يعود لليوم بعد الختم فيُغلق الشرط وحده */
+  $('nudgeBar').hidden=true;
+  var sp=$('salesPanel');
+  if(sp)sp.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});
+});
+$('nudgeX').addEventListener('click',function(){
+  try{localStorage.setItem(NUDGE,todayRiyadh());}catch(e){}
+  updateNudge();
+});
+
+/* ---------- بطاقة «اليوم مختوم»: أول حالة «انتهى» صريحة للوحة ---------- */
+var editingSealed=false;
+var sealedSnap=null; /* F3: لقطة ربح اليوم المختوم — تُثبَّت الـhero والشريط عليها */
+function refreshSealedCard(){
+  var form=$('salesForm'),card=$('sealedCard');
+  if(!form||!card)return;
+  var today=todayRiyadh(),entry=null,h=getHist();
+  for(var i=0;i<h.length;i++)if(h[i].date===today){entry=h[i];break;}
+  if(entry&&!pendingUndoEntry&&!editingSealed){
+    var bits=[];
+    if(entry.g.qty>0)bits.push('جيميناي ×'+entry.g.qty);
+    if(entry.d.qty>0)bits.push('دولينجو ×'+entry.d.qty);
+    $('sealedLine').textContent=fmtDate(today)+'. '+(bits.length?bits.join('، '):'بلا مبيعات')+'. ربح '+money(totals(entry).prf);
+    form.hidden=true;card.hidden=false;
+  }else{
+    form.hidden=false;card.hidden=true;
+  }
+}
+$('sealedEdit').addEventListener('click',function(){
+  var today=todayRiyadh(),entry=null,h=getHist();
+  for(var i=0;i<h.length;i++)if(h[i].date===today){entry=h[i];break;}
+  if(!entry)return;
+  /* التعديل يبدأ من المحفوظ — لا من الصفر */
+  editingSealed=true;
+  sealedSnap=null; /* F3(أ): فك تثبيت الـhero — يعود حيًا مع العدّادات */
+  $('day').value=today;
+  $('g_qty').value=entry.g.qty;$('d_qty').value=entry.d.qty;
+  recalc();
+  refreshSealedCard();
+});
+$('sealedCopy').addEventListener('click',function(){
+  var today=todayRiyadh(),entry=null,h=getHist();
+  for(var i=0;i<h.length;i++)if(h[i].date===today){entry=h[i];break;}
+  if(!entry)return;
+  doCopyText(summaryText(entry,today));
+});
+
+/* ---------- سطر اليوم (F7): ملاحظة 140 حرفًا — من صف السجل فقط ---------- */
+var noteDate=null,noteFocus=null;
+function loadNotes(){try{return JSON.parse(localStorage.getItem(NOTES))||{};}catch(e){return{};}}
+function saveNotes(n){try{localStorage.setItem(NOTES,JSON.stringify(n));}catch(e){}}
+function openNoteModal(date){
+  noteDate=date;noteFocus=document.activeElement;
+  var n=loadNotes();
+  $('noteTitle').textContent='سطر اليوم: '+fmtDate(date);
+  $('noteText').value=n[date]||'';
+  $('noteModal').classList.add('show');
+  setTimeout(function(){$('noteText').focus();},30);
+}
+function closeNoteModal(){
+  $('noteModal').classList.remove('show');
+  noteDate=null;
+  if(noteFocus&&noteFocus.focus)noteFocus.focus();
+}
+$('noteSave').addEventListener('click',function(){
+  if(!noteDate){closeNoteModal();return;}
+  var t=$('noteText').value.trim().slice(0,140);
+  var n=loadNotes();
+  if(t)n[noteDate]=t;else delete n[noteDate];
+  saveNotes(n);
+  closeNoteModal();
+  renderHistory();
+});
+$('noteCancel').addEventListener('click',closeNoteModal);
+$('noteModal').addEventListener('click',function(ev){if(ev.target===$('noteModal'))closeNoteModal();});
+document.addEventListener('keydown',function(ev){
+  if(ev.key==='Escape'&&$('noteModal').classList.contains('show'))closeNoteModal();
+});
+/* تنظيف صامت عند التحميل: ملاحظات بلا سجل مطابق تُحذف */
+function pruneNotes(){
+  var h=getHist(),ok={};
+  h.forEach(function(e){ok[e.date]=1;});
+  var n=loadNotes(),chg=false;
+  Object.keys(n).forEach(function(k){if(!ok[k]){delete n[k];chg=true;}});
+  if(chg)saveNotes(n);
+}
+
+/* ---------- مراجعة الأسبوع (G7'): حوكمة الهدف — صباح السبت فقط ---------- */
+/* مجاميع آخر n أسابيع كاملة (السبت→الجمعة) قبل الأسبوع الحالي */
+function weekSumsBack(n){
+  var h=getHist(),wr=weekRange(todayRiyadh()),end=prevDay(wr.from),out=[];
+  for(var w=0;w<n;w++){
+    var f=end,s=f;
+    for(var i=0;i<6;i++)s=prevDay(s);
+    var sum=0;
+    h.forEach(function(e){if(e.date>=s&&e.date<=f)sum+=totals(e).prf;});
+    out.push({from:s,to:f,sum:sum});
+    end=prevDay(s);
+  }
+  return out;
+}
+function wrkKey(){return addDays(weekRange(todayRiyadh()).from,-7);}
+function buildWeekReview(){
+  var card=$('weekReview');if(!card)return;
+  card.hidden=true;
+  /* F11: مفتاح الإسكات بأسبوع المراجعة (الأسبوع الكامل السابق) — البطاقة
+     تبقى ظاهرة من صباح السبت حتى تُثبَّت أو تُصرَف */
+  var seen=false;
+  try{seen=localStorage.getItem(WRK)===wrkKey();}catch(e){}
+  if(seen)return;
+  var weeks=weekSumsBack(3);
+  var nz=weeks.filter(function(w){return w.sum>0;});
+  if(!nz.length)return; /* بلا بيانات — لا شيء يُراجَع */
+  var last=weeks[0].sum,prev=weeks[1].sum;
+  var avg=nz.reduce(function(a,w){return a+w.sum;},0)/nz.length;
+  var sug=Math.max(10,Math.round(avg/5)*5);
+  var sugLbl=nz.length>=3?'متوسط آخر 3 أسابيع':nz.length===2?'متوسط آخر أسبوعين':'مجموع أسبوعك الفايت';
+  /* المقارنة بمنطق G3 — الأسبوع مكتمل فلا «لحد الآن» */
+  var cmpHtml='';
+  if(prev>0){
+    var D=last-prev,P=Math.round(Math.abs(D)/prev*100),cls,arrow,tail;
+    if(D>1){cls='up';arrow=ARROW_UP;tail='أعلى بـ '+fmt(D)+' ر.س ('+P+'%) من اللي قبله';}
+    else if(D<-1){cls='down';arrow=ARROW_DOWN;tail='أقل بـ '+fmt(-D)+' ر.س ('+P+'%) من اللي قبله';}
+    else{cls='flat';arrow=ARROW_FLAT;tail='نفس المستوى تقريبًا';}
+    cmpHtml='<div class="week-cmp '+cls+'">'+arrow+'<span>'+tail+'</span></div>';
+  }
+  var streak=streakChain().n;
+  var g=loadGoal(),verdict;
+  if(g&&g.period==='week'){
+    verdict=last>=g.amount
+      ?'هدفك كان '+fmt(g.amount)+' ر.س. صكّيته ✓'
+      :'هدفك كان '+fmt(g.amount)+' ر.س. وصلت '+fmt(last)+'، باقي '+fmt(g.amount-last);
+  }else verdict='ما كان عندك هدف أسبوعي';
+  $('wrBody').innerHTML=
+    '<div class="wr-line">أسبوعك الفايت: <b class="num">'+fmt(last)+' ر.س</b></div>'+
+    cmpHtml+
+    '<div class="wr-line">سلسلة الختم: '+streak+' يوم ورا بعض</div>'+
+    '<div class="wr-line">'+esc(verdict)+'</div>'+
+    '<div class="wr-line wr-sug">اقتراح الأسبوع الجاي: <b class="num">'+fmt(sug)+' ر.س</b> <span class="wr-sub">('+sugLbl+')</span></div>';
+  $('wrPin').textContent='ثبّت الهدف: '+fmt(sug)+' ر.س';
+  $('wrPin').onclick=function(){pinWeeklyGoal(sug);};
+  card.hidden=false;
+}
+function pinWeeklyGoal(sug){
+  /* التثبيت يدوي دائمًا — يكتب في مفتاح هدف F1 الموجود، لا مفتاح جديد */
+  saveGoal({amount:sug,period:'week'});
+  setGoalHit(null);
+  $('goalAmt').value=sug;
+  document.querySelectorAll('[data-goalperiod]').forEach(function(x){
+    x.classList.toggle('on',x.getAttribute('data-goalperiod')==='week');
+  });
+  syncPressed('[data-goalperiod]');
+  updateGoalBar();
+  try{localStorage.setItem(WRK,wrkKey());}catch(e){}
+  $('weekReview').hidden=true;
+  toast('هدف الأسبوع الجاي: '+fmt(sug)+' ر.س. بالتوفيق');
+}
+function dismissWeekReview(){
+  try{localStorage.setItem(WRK,wrkKey());}catch(e){}
+  $('weekReview').hidden=true;
+}
+$('wrLater').addEventListener('click',dismissWeekReview);
+$('wrX').addEventListener('click',dismissWeekReview);
+
 var rT=null;
 window.addEventListener('resize',function(){clearTimeout(rT);rT=setTimeout(function(){drawChart('final');},180);});
 
@@ -1714,13 +2719,26 @@ if('serviceWorker' in navigator){
     setInterval(function(){r.update().catch(function(){});},3600e3);
   }).catch(function(){});
   navigator.serviceWorker.addEventListener('controllerchange',function(){
-    if(ctrl0)$('updateBar').classList.add('show');
+    /* البانر فقط عند تسلّم نسخة جديدة من نفس العامل (scriptURL مطابق للمخزّن) —
+       أي اختلاف في الرابط = مجرد تسليم نطاق، ولا بانر */
+    var nu=navigator.serviceWorker.controller?navigator.serviceWorker.controller.scriptURL:null;
+    if(ctrl0&&nu&&nu===ctrl0){$('updateBar').classList.add('show');document.body.classList.add('upd');}
   });
   document.addEventListener('visibilitychange',function(){
-    if(!document.hidden)navigator.serviceWorker.ready.then(function(r){r.update().catch(function(){});}).catch(function(){});
+    if(document.hidden)return;
+    navigator.serviceWorker.ready.then(function(r){r.update().catch(function(){});}).catch(function(){});
+    /* عودة مرئية: أخفِ واجهة التثبيت فورًا لو التطبيق مثبّت فعلًا */
+    var st=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone;
+    if(st){$('installBtn').classList.remove('show');$('iosCard').classList.remove('show');}
   });
 }
 $('updateGo').addEventListener('click',function(){location.reload();});
+$('updateX').addEventListener('click',function(){
+  /* U6: صرف البانر للجلسة الحالية فقط — يعود عند controllerchange لاحق */
+  $('updateBar').classList.remove('show');
+  document.body.classList.remove('upd');
+  var sb=$('stampBtn');if(sb)sb.focus();
+});
 
 /* ---------- التثبيت (install.md P1) ---------- */
 var deferredPrompt=null;
@@ -1736,11 +2754,18 @@ $('installBtn').addEventListener('click',function(){
   }).catch(function(){});
 });
 (function iosCard(){
-  var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  /* كشف iOS يشمل iPadOS بوضع سطح المكتب (يظهر كـMac مع لمس متعدد) */
+  var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(/mac/i.test(navigator.platform||'')&&(navigator.maxTouchPoints||0)>1);
   var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone;
   if(isIOS&&!standalone&&!localStorage.getItem(IOSX))$('iosCard').classList.add('show');
   $('iosCardX').addEventListener('click',function(){
     localStorage.setItem(IOSX,'1');$('iosCard').classList.remove('show');
+  });
+  /* التثبيت من أي طريق (قائمة المتصفح مثلًا) يُخفي واجهة التثبيت فورًا */
+  window.addEventListener('appinstalled',function(){
+    $('installBtn').classList.remove('show');
+    $('iosCard').classList.remove('show');
+    try{localStorage.setItem(IOSX,'1');}catch(e){}
   });
 })();
 
@@ -1757,19 +2782,38 @@ $('installBtn').addEventListener('click',function(){
     });
   }
   var t=todayRiyadh();
-  $('day').value=t;$('day').max=t;
+  /* BUG-C4-1: اقرأ المسودة قبل فرض تاريخ اليوم — إن كانت لتاريخ شبحي صالح،
+     أبقِ التاريخ المختار عليها لتُستعاد الكميات بدل ضياعها عند التحديث */
+  var dd=null;try{dd=JSON.parse(localStorage.getItem(DRAFT));}catch(e){dd=null;}
+  var ghostOk=dd&&dd.date&&typeof dd.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(dd.date)&&dd.date<=t;
+  $('day').value=ghostOk?dd.date:t;$('day').max=t;
   $('todayLine').textContent=fmtDate(t);
-  seed();
-  buildOdo(fmt2(0));renderOdo(0,true);
-  $('heroSr').textContent=money(0);
+  refreshMaxPrf(); /* L4: مسحة واحدة لتهيئة maxPrfMem */
+  loadGoalHit();   /* L5: قراءة GOALHIT مرة واحدة */
+  /* UX 1.3: حالة محايدة قبل أول recalc — «—» لا «0»، وزر الختم معطّل بصريًا */
+  buildOdo('—');
+  $('heroSr').textContent='—';
+  $('odoSlim').textContent='—';
+  $('stampBtn').classList.add('pre');
   bindGoalSeg();
-  paintStatic(current());
+  syncPressed('[data-range]');
+  syncPressed('[data-goalperiod]');
+  restoreDraft();
+  /* BUG-1: مزامنة الـhero مع المسودة المستعادة — لحظيًا بلا عدّ من الصفر (UX 1.4) */
+  var c0=current();
+  paintStatic(c0);
+  animateHeroTo(c0.prf,true);
+  $('stampBtn').classList.remove('pre');
+  updateWhisper();
   renderHistory();
-  drawChart('stats');
-  setTimeout(function(){drawChart('intro');},reduced?0:820);
+  drawChart('intro'); /* L6: توحيد تسمية وضع الرسم */
   updateStreak(false);
   updateGoalBar();
   updateSavebarDate();
+  pruneNotes();
+  refreshSealedCard();
+  updateNudge();
+  buildWeekReview();
   ambStart();
 })();
 })();
