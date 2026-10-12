@@ -1,36 +1,28 @@
 <!DOCTYPE html>
 <!--
-  حاسبة أرباح المتجر — PWA (نسخة specs الثلاثة المدمجة)
+  حصّالة اليوم — PWA (إعادة بناء Night Mint)
   ============================================================================
-  قرارات دمج الـspecs عند التعارض (موثقة هنا حسب طلب المنفذ):
-  1) العدّاد البطولي: shape يطلب خانات odometer دوّارة (550ms)، وmotion يطلب
-     عدًا تصاعديًا بمدة تكيفية (260–650ms). الحل: حلقة rAF واحدة تستكمل القيمة
-     (المدة التكيفية + easeOutExpo)، وخانات الـodometer تُرسم كانعكاس ميكانيكي
-     مستمر لتلك القيمة (translateY كسري لكل خانة). لحظة واحدة، آليتان متكاملتان.
-  2) اهتزاز زر الحفظ عند العدّاد صفر: effects يطلب vibrate([30,40,30]) مع
-     الاهتزاز الأفقي، وmotion يرفضه صراحة ("مزعج"). اعتمدت الرفض: اهتزاز
-     بصري + toast فقط، بلا اهتزاز لمسي.
-  3) اهتزاز نقرات العدّاد (+/−): effects يمنعه (لا إفراط — بصري فقط)، وmotion
-     يقترح vibrate(8). اعتمدت المنع: العدّاد بصري فقط.
-  4) الخلفية: shape أزال الغسالة الخضراء الساكنة واستبدلها بشبكة HUD؛ وeffects
-     طلب توهجًا علويًا "يتنفس". أبقيت الاثنين: شبكة HUD ساكنة + طبقة توهج
-     خافتة تتنفس (0.05↔0.10) تشتد مع الربح — لا تعارض حقيقي بعد الفصل.
-  5) احتفال الحفظ (reduced-motion): effects يقول overlay ثابت 1.2s، وmotion
-     يقول fade بسيط 150ms. اعتمدت: fade دخول 150ms + ثبات ~1s للقراءة + fade
-     خروج — يحترم الاثنين.
-  6) زر الحفظ: shape يحدد تعبئة مسطحة #22C55E صراحة (رغم أن توكن harvest أصبح
-     #2BE36B) — اتبعت التحديد الصريح للزر.
-  7) فتح/طي الإعدادات المتحرك (motion P2): أُجّل — محاربة سلوك <details>
-     الأصلي تخاطر بكسر الوصولية؛ أُبقي الفتح الفوري مع توحيد دوران السهم 300ms.
-  8) إصلاح :root المكسور (shape §9): كان مُطبقًا فعلًا في الملف الحالي — أُبقي
-     عليه مع تحديث قيم التوكنز الجديدة.
-  ============================================================================
+  الهوية: «دار السكّ الليليّة» — فن العملات الورقية بترجمة ليلية رقمية.
+  قرارات معمارية (انظر brainstorm/final-plan.md):
+  1) الهوية Night Mint فوق Ledger Noir — الذهب والحبر الأخضر شريكان متكافئان.
+  2) زر الحفظ «اختم اليوم» (لغة العالم) بدل «سجّل الربح» من microcopy — انحراف
+     موثق وحيد: توحيد لغة العالم أهم من الاقتراح المفرد.
+  3) network-first للتنقلات في الـSW قرار واعٍ موثق (install.md §11) — لا يُمس.
+  4) الـconfirm() الأصلية استُبدلت بتأكيد داخل التطبيق (درس AGENTS.md: الحوارات
+     الأصلية تجمّد أتمتة المتصفح).
+  5) الـhero النحيف للقراءة فقط — شريط الختم السفلي هو الفعل (لا زرّي حفظ
+     مكررين).
 -->
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#010409">
+<meta name="theme-color" content="#071009">
+<meta name="description" content="احسب ربحك اليومي من اشتراكات جيميناي ودولينجو — يعمل أوفلاين">
+<meta property="og:type" content="website">
+<meta property="og:title" content="حصّالة اليوم">
+<meta property="og:description" content="احسب ربحك اليومي من اشتراكات جيميناي ودولينجو — يعمل أوفلاين">
+<meta property="og:image" content="https://ahmadmalfouzan-source.github.io/arbah/icon-512.png">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -38,269 +30,333 @@
 <meta name="apple-mobile-web-app-title" content="أرباح المتجر">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
-<title>حاسبة أرباح المتجر</title>
+<title>حصّالة اليوم</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+/* تسجيل الـSW أثناء الـparse (install.md P0-1) — لا انتظار window.load */
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  navigator.serviceWorker.register('./sw.js').catch(function(){});
+}
+</script>
 <style>
-/* ============ tokens (shape §2 + motion §1) ============ */
+/* ============ توكنز دار السكّ الليليّة (art-direction §2) ============ */
 :root{
   color-scheme:dark;
-  --void:#010409;
-  --panel:#0A1224;
-  --panel-2:#060C1B;
-  --line:rgba(148,163,184,.12);
-  --hairline:rgba(148,163,184,.07);
-  --ink:#F5F8FD;
-  --fog:#8E9BB0;
-  --harvest:#2BE36B;
-  --harvest-ink:#04140A;
-  --harvest-dim:rgba(43,227,107,.12);
-  --gold:#F5B81F;
-  --blood:#FF6B6B;
+  --mint-paper:#071009;
+  --ledger:#0B1512;
+  --ledger-2:#060D0A;
+  --engrave-line:rgba(217,169,46,.16);
+  --hairline:rgba(244,241,230,.08);
+  --ink:#F4F1E6;
+  --fog:#9AA39B;
+  --mint-green:#2BBF66;
+  --mint-ink:#04140A;
+  --mint-dim:rgba(43,191,102,.10);
+  --gold-foil:#D9A92E;
+  --gold-bright:#F0C75E;
+  --seal-red:#B4443C;
   --cyan:#38BDF8;
-  --stepper-bg:#141D33;
-  --harvest-deep:#15803D;
   --radius:18px;
   --ease-out:cubic-bezier(.16,1,.3,1);
   --ease-spring:cubic-bezier(.34,1.56,.64,1);
   --ease-draw:cubic-bezier(.65,0,.35,1);
+  --ease-stamp:cubic-bezier(.2,.9,.25,1);
   --dur-tap:90ms;
   --dur-micro:180ms;
   --dur-ui:300ms;
   --dur-moment:500ms;
   --dur-fly:620ms;
-  --dur-bar:480ms;
-  --stagger-bar:70ms;
   --stagger-in:80ms;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{
-  background:var(--void);
+  background:var(--mint-paper);
   color:var(--ink);
   font-family:'Cairo',system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;
   min-height:100vh;
-  padding:22px 14px 56px;
+  padding:max(env(safe-area-inset-top),22px) 14px calc(108px + max(env(safe-area-inset-bottom),20px));
   font-size:.95rem;
+  -webkit-tap-highlight-color:transparent;
 }
-/* شبكة HUD خافتة بقناع تلاشٍ (shape §4) */
+/* غيوش مالي خافت ≤4% يحل محل شبكة HUD (art-direction §3) */
 body::before{
-  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:
-    repeating-linear-gradient(0deg,rgba(148,163,184,.05) 0 1px,transparent 1px 28px),
-    repeating-linear-gradient(90deg,rgba(148,163,184,.05) 0 1px,transparent 1px 28px);
-  -webkit-mask-image:radial-gradient(ellipse at 50% 0%,black 25%,transparent 78%);
-  mask-image:radial-gradient(ellipse at 50% 0%,black 25%,transparent 78%);
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cg fill='none' stroke='%23D9A92E'%3E%3Ccircle cx='120' cy='120' r='34'/%3E%3Ccircle cx='120' cy='120' r='54'/%3E%3Ccircle cx='120' cy='120' r='74'/%3E%3Ccircle cx='120' cy='120' r='94'/%3E%3Ccircle cx='120' cy='120' r='114'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-image:radial-gradient(ellipse at 50% 0%,black 20%,transparent 75%);
+  mask-image:radial-gradient(ellipse at 50% 0%,black 20%,transparent 75%);
 }
-/* vignette خفيف على الحواف (shape §4) */
+/* vignette خفيف */
 body::after{
   content:"";position:fixed;inset:0;z-index:2;pointer-events:none;
-  background:radial-gradient(ellipse at 50% 40%,transparent 62%,rgba(0,0,0,.32) 100%);
+  background:radial-gradient(ellipse at 50% 40%,transparent 62%,rgba(0,0,0,.34) 100%);
 }
-/* توهج علوي يتنفس (effects E3) — تُدار شفافيته من JS */
-#glowbreath{
-  position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.07;
-  background:radial-gradient(900px 380px at 50% -140px,rgba(43,227,107,.55),transparent 65%);
-}
-/* غبار عائم (effects E3) */
+/* غبار ذهبي عائم (طبقة الأجواء الوحيدة — polish حذف #1) */
 #dust{position:fixed;inset:0;z-index:0;pointer-events:none}
-::selection{background:rgba(43,227,107,.35);color:#fff}
-:focus-visible{outline:2px solid var(--harvest);outline-offset:3px;border-radius:6px}
-::-webkit-scrollbar{width:10px}
-::-webkit-scrollbar-track{background:var(--void)}
-::-webkit-scrollbar-thumb{background:#1E2A45;border-radius:8px;border:2px solid var(--void)}
-input{caret-color:var(--harvest)}
+::selection{background:rgba(217,169,46,.4);color:#fff}
+:focus-visible{outline:2px solid var(--gold-foil);outline-offset:3px;border-radius:6px}
+input{caret-color:var(--mint-green)}
 input[type=number]{-moz-appearance:textfield;appearance:textfield}
 input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .num{font-family:'IBM Plex Mono','Cairo',monospace;font-variant-numeric:tabular-nums}
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .wrap{max-width:620px;margin:0 auto;position:relative;z-index:1}
 
-/* ============ entrance choreography (motion §2, <900ms) ============ */
+/* ============ كوريغرافيا الدخول (<900ms) ============ */
 @keyframes riseIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes heroIn{from{opacity:0;transform:scale(.94);filter:blur(6px)}to{opacity:1;transform:scale(1);filter:blur(0)}}
-@keyframes wipeIn{from{opacity:0;clip-path:inset(0 0 100% 0)}to{opacity:1;clip-path:inset(0 0 0 0)}}
+@keyframes heroIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .in1{animation:riseIn 400ms var(--ease-out) 0ms both}
 .in2{animation:riseIn 450ms var(--ease-out) 80ms both}
 .in3{animation:heroIn 520ms var(--ease-out) 140ms both}
-.in4{animation:wipeIn 560ms var(--ease-out) 260ms both}
+.in4{animation:riseIn 480ms var(--ease-out) 220ms both}
 .in5{animation:fadeIn 280ms ease-out 340ms both}
 
-/* ============ header ============ */
+/* ============ الترويسة ============ */
 header.top{margin:6px 2px 20px}
-header.top h1{font-size:1.35rem;font-weight:800;letter-spacing:-.01em}
-header.top h1 .tick{color:var(--harvest)}
+header.top h1{font-size:1.35rem;font-weight:800}
+header.top h1 .tick{color:var(--gold-foil)}
 header.top .today-line{color:var(--fog);font-size:.88rem;margin-top:6px;display:flex;align-items:center;gap:8px}
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--harvest);flex:none;animation:pulse 2.4s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(43,227,107,.5)}70%{box-shadow:0 0 0 9px rgba(43,227,107,0)}100%{box-shadow:0 0 0 0 rgba(43,227,107,0)}}
-/* شارة السلسلة (effects E6b) */
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--mint-green);flex:none}
 #streakBadge{
   display:none;align-items:center;gap:8px;margin-top:10px;
   color:var(--fog);font-size:.8rem;font-weight:600;
 }
 #streakBadge.show{display:flex;animation:fadeIn 250ms var(--ease-out) both}
-#streakBadge .sdot{width:7px;height:7px;border-radius:50%;background:var(--harvest);flex:none;animation:pulse 2s infinite}
-#streakBadge.pop{animation:streakPop 250ms var(--ease-out)}
-@keyframes streakPop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+#streakBadge .sdot{width:7px;height:7px;border-radius:50%;background:var(--gold-foil);flex:none}
 
-/* ============ panels ============ */
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px 18px;margin-bottom:14px}
+/* ============ البطاقات ============ */
+.panel{background:var(--ledger);border:1px solid var(--engrave-line);border-radius:var(--radius);padding:20px 18px;margin-bottom:16px}
 .panel>h2{font-size:1.05rem;font-weight:700;margin-bottom:14px}
 .panel .hint{color:var(--fog);font-size:.8rem;margin-bottom:14px}
 
-/* ============ sticky hero + odometer (shape §5, §6.1) ============ */
+/* ============ العدّاد البطولي — «وجه العملة» (art-direction §6.1) ============ */
 .hero{
-  position:sticky;top:10px;z-index:20;
-  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
-  text-align:center;padding:32px 10px 20px;margin-bottom:14px;
+  position:sticky;top:max(env(safe-area-inset-top),10px);z-index:20;
+  background:var(--ledger);border:1px solid var(--engrave-line);border-radius:var(--radius);
+  text-align:center;padding:32px 16px 20px;margin-bottom:16px;
+  transition:padding 280ms var(--ease-out);
 }
-.hero-frame{position:absolute;inset:8px;pointer-events:none}
-.hero-frame::before,.hero-frame::after,
-.hero-frame i::before,.hero-frame i::after{
-  content:"";position:absolute;width:14px;height:14px;border:0 solid rgba(43,227,107,.45);
+/* الإطار المزدوج — لغة العملات الورقية بدل زوايا FUI */
+.hero::before,.hero::after{
+  content:"";position:absolute;pointer-events:none;border:1px solid var(--engrave-line);
 }
-.hero-frame::before{top:0;inset-inline-start:0;border-top-width:1px;border-inline-start-width:1px}
-.hero-frame::after{top:0;inset-inline-end:0;border-top-width:1px;border-inline-end-width:1px}
-.hero-frame i::before{bottom:0;inset-inline-start:0;border-bottom-width:1px;border-inline-start-width:1px}
-.hero-frame i::after{bottom:0;inset-inline-end:0;border-bottom-width:1px;border-inline-end-width:1px}
-.hero .h-label{color:var(--fog);font-size:.8rem;margin-bottom:10px;font-weight:600}
-/* العدّاد الدوّار */
-.h-value{line-height:1;direction:ltr}
+.hero::before{inset:7px;border-radius:12px}
+.hero::after{inset:11px;border-radius:9px;opacity:.55}
+/* غيوش مركزي خلف الرقم كعلامة مائية */
+.hero .wm{
+  position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cg fill='none' stroke='%23D9A92E'%3E%3Ccircle cx='100' cy='100' r='30'/%3E%3Ccircle cx='100' cy='100' r='48'/%3E%3Ccircle cx='100' cy='100' r='66'/%3E%3Ccircle cx='100' cy='100' r='84'/%3E%3C/g%3E%3C/svg%3E");
+  background-position:center;background-repeat:no-repeat;
+  -webkit-mask-image:radial-gradient(circle,black 10%,transparent 55%);
+  mask-image:radial-gradient(circle,black 10%,transparent 55%);
+}
+.hero .h-label{color:var(--fog);font-size:.8rem;margin-bottom:10px;font-weight:600;position:relative}
+.hero .h-value{line-height:1;direction:ltr;position:relative}
 .odo{display:inline-flex;align-items:flex-start;direction:ltr}
-.odo-digit{height:1em;overflow:hidden;position:relative;width:.62em;flex:none}
+.odo-digit{height:1em;overflow:hidden;position:relative;width:.62em;flex:none;border-bottom:1px solid var(--engrave-line)}
 .odo-strip{position:absolute;top:0;left:0;display:flex;flex-direction:column;will-change:transform}
 .odo-strip span{height:1em;line-height:1;display:flex;align-items:center;justify-content:center}
-.odo-dot{width:.32em;flex:none;text-align:center}
+.odo-sep{width:.34em;flex:none;text-align:center}
 #odo{
   font-family:'IBM Plex Mono',monospace;font-weight:700;
   font-size:clamp(3.2rem,18vw,4.5rem);letter-spacing:-.02em;
-  color:var(--harvest);font-variant-numeric:tabular-nums;
-  text-shadow:0 0 34px rgba(43,227,107,.25);
+  color:var(--mint-green);font-variant-numeric:tabular-nums;
+  text-shadow:0 1px 0 rgba(255,255,255,.06),0 -1px 2px rgba(0,0,0,.6);
 }
 #odo.glow{animation:numBreathe 600ms var(--ease-out)}
-@keyframes numBreathe{0%{text-shadow:0 0 34px rgba(43,227,107,.25)}40%{text-shadow:0 0 60px rgba(43,227,107,.55)}100%{text-shadow:0 0 34px rgba(43,227,107,.25)}}
-.hero .h-cur{color:var(--harvest);font-size:1rem;font-weight:700;margin-top:8px;opacity:.85}
-.hero .h-sub{display:flex;justify-content:center;gap:18px;margin-top:14px;font-size:.78rem;color:var(--fog)}
+@keyframes numBreathe{0%{opacity:.55}40%{opacity:1}100%{opacity:1}}
+/* عبور ذهبي للرقم القياسي أثناء الكتابة (PM2) */
+#odoWrap{position:relative;display:inline-block}
+#goldSweep{
+  position:absolute;inset:0;pointer-events:none;opacity:0;overflow:hidden;
+  background:linear-gradient(100deg,transparent 20%,rgba(240,199,94,.55) 50%,transparent 80%);
+  background-size:220% 100%;
+}
+#goldSweep.go{animation:sweep 600ms var(--ease-out) both}
+@keyframes sweep{0%{opacity:1;background-position:120% 0}100%{opacity:0;background-position:-120% 0}}
+.hero .h-cur{color:var(--mint-green);font-size:1rem;font-weight:700;margin-top:8px;opacity:.85;position:relative}
+.hero .h-sub{display:flex;justify-content:center;gap:18px;margin-top:14px;font-size:.78rem;color:var(--fog);position:relative}
 .hero .h-sub b{font-weight:700}
-.day-pick{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;color:var(--fog);font-size:.78rem}
-.day-pick input{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:inherit;font-size:.8rem;padding:6px 10px}
+.hero .h-sub .vline{width:1px;background:var(--hairline);align-self:stretch}
+/* شريط الهدف (G2) */
+.goalbar{display:none;margin-top:16px;position:relative;text-align:start}
+.goalbar.show{display:block}
+.goalbar .gb-track{height:6px;border-radius:3px;background:rgba(244,241,230,.1);overflow:hidden}
+.goalbar .gb-fill{height:100%;width:0;border-radius:3px;background:var(--mint-green);transition:width 500ms var(--ease-out)}
+.goalbar .gb-fill.gold{background:var(--gold-foil)}
+.goalbar .gb-txt{font-size:.76rem;color:var(--fog);margin-top:8px;text-align:center}
+.goalbar .gb-txt b{color:var(--ink)}
+.goalbar .gb-txt .daily{display:block;margin-top:2px;color:var(--gold-bright)}
+/* نجمة الرقم القياسي (PM2) */
+#recStar{display:none;color:var(--gold-foil);vertical-align:middle;margin-inline-start:6px}
+#recStar.show{display:inline-block;animation:starIn 350ms var(--ease-spring) both}
+@keyframes starIn{from{opacity:0;transform:scale(0)}60%{transform:scale(1.25)}to{opacity:1;transform:scale(1)}}
+#recChip{
+  display:none;font-size:.72rem;font-weight:800;color:var(--gold-bright);
+  background:rgba(217,169,46,.14);border:1px solid var(--engrave-line);
+  border-radius:999px;padding:4px 12px;margin-top:8px;width:fit-content;margin-inline:auto;
+}
+#recChip.show{display:block;animation:fadeIn 250ms var(--ease-out) both}
+/* الحالة النحيفة عند التمرير (layout P0-1 + polish 1.1/4.2) */
+.hero .h-slim{display:none}
+.hero.slim{padding:8px 16px}
+.hero.slim::before,.hero.slim::after,.hero.slim .wm,
+.hero.slim .h-label,.hero.slim .h-value,.hero.slim .h-cur,.hero.slim .h-sub,.hero.slim .goalbar{display:none}
+.hero.slim .h-slim{display:flex;align-items:center;justify-content:center;gap:10px}
+.hero.slim .h-slim .sl{font-size:.78rem;color:var(--fog);font-weight:600}
+.hero.slim .h-slim .sv{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.4rem;color:var(--mint-green);font-variant-numeric:tabular-nums}
+.hero.slim .h-slim .sc{font-size:.78rem;color:var(--mint-green);font-weight:700}
+.hero.turbo .h-value{animation:turbo 160ms var(--ease-spring)}
+@keyframes turbo{0%{transform:scale(1)}40%{transform:scale(1.02)}100%{transform:scale(1)}}
+/* ارتجاجة ضربة الختم 12ms (art-direction §4) */
+body.jolt .wrap{animation:jolt 160ms linear}
+@keyframes jolt{0%,100%{transform:translateY(0)}8%{transform:translateY(2px)}20%{transform:translateY(0)}}
 
-/* ============ product rows (shape §6.2) ============ */
+/* ============ صفوف المنتجات — «أدراج الخزنة» (art-direction §6.2) ============ */
 .prow{padding:16px 2px;border-top:1px solid var(--hairline)}
 .prow:first-of-type{border-top:none;padding-top:2px}
 .prow .p-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .pip{width:8px;height:8px;border-radius:50%;flex:none}
-.pip.g{background:var(--harvest);box-shadow:0 0 8px rgba(43,227,107,.7)}
-.pip.d{background:var(--cyan);box-shadow:0 0 8px rgba(56,189,248,.7)}
+.pip.g{background:var(--mint-green)}
+.pip.d{background:var(--cyan)}
 .p-name{font-weight:700;font-size:.95rem}
 .p-price{margin-inline-start:auto;color:var(--fog);font-size:.75rem}
 .p-mid{display:flex;align-items:center;justify-content:space-between;gap:12px}
-/* عدّادات (shape §6.3 + motion §6) */
-.stepper{display:flex;align-items:center;gap:2px;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:4px}
-.stepper button{
-  width:48px;height:48px;border:1px solid var(--line);border-radius:12px;cursor:pointer;
-  background:var(--stepper-bg);color:var(--ink);font-size:1.4rem;font-weight:700;line-height:1;
-  font-family:'IBM Plex Mono',monospace;
-  transition:transform 200ms var(--ease-spring),background-color 150ms ease,color 150ms ease;
+.stepper{
+  display:flex;align-items:center;gap:2px;background:var(--ledger-2);
+  border:1px solid var(--engrave-line);border-radius:14px;padding:4px;position:relative;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;
 }
-.stepper button:hover{background:#1A2540}
-.stepper button:active{transform:scale(.93);background:var(--harvest);color:var(--harvest-ink);transition-duration:80ms}
+.stepper button{
+  width:48px;height:48px;border:1px solid var(--engrave-line);border-radius:12px;cursor:pointer;
+  background:#141D16;color:var(--ink);font-size:1.4rem;font-weight:700;line-height:1;
+  font-family:'IBM Plex Mono',monospace;border-bottom-width:2px;border-bottom-color:rgba(0,0,0,.55);
+  transition:transform 80ms ease,background-color 150ms ease,color 150ms ease;
+  touch-action:manipulation;
+}
+.stepper button:hover{background:#1A2419}
+.stepper button:active{transform:translateY(1px);background:var(--mint-green);color:var(--mint-ink);border-bottom-width:1px}
+.stepper button:disabled{opacity:.35;cursor:default}
+.stepper button:disabled:active{transform:none;background:#141D16;color:var(--ink)}
 .stepper input{
   width:72px;text-align:center;background:transparent;border:none;color:var(--ink);
   font-size:1.4rem;font-weight:700;font-family:'IBM Plex Mono',monospace;padding:6px 0;
-  font-variant-numeric:tabular-nums;
+  font-variant-numeric:tabular-nums;border-radius:8px;
 }
-.stepper input:focus{outline:none}
+.stepper input:focus{outline:none;border:1px solid var(--mint-green);box-shadow:0 0 0 3px rgba(43,191,102,.18)}
 .stepper input.tick{animation:tick 140ms var(--ease-out)}
 @keyframes tick{from{transform:translateY(3px)}to{transform:translateY(0)}}
-/* قراءة الربح: رقم كبير + سطر واحد */
+/* شرائح جنون العدّاد (PM1) */
+.fchip{
+  position:absolute;top:-6px;inset-inline-start:14px;pointer-events:none;
+  font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:700;color:var(--mint-green);
+  opacity:0;
+}
+.fchip.fly{animation:fchip 700ms ease-out both}
+@keyframes fchip{0%{opacity:0;transform:translateY(0)}20%{opacity:1}100%{opacity:0;transform:translateY(-28px)}}
+.frenzy-tag{
+  position:absolute;top:-30px;inset-inline-start:50%;transform:translateX(50%);
+  font-size:.7rem;font-weight:800;color:var(--gold-bright);white-space:nowrap;
+  background:rgba(217,169,46,.14);border:1px solid var(--engrave-line);border-radius:999px;
+  padding:3px 10px;opacity:0;pointer-events:none;transition:opacity 200ms ease;
+}
+.frenzy-tag.show{opacity:1}
+/* قراءة الربح */
 .p-read{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}
 .p-profit{display:flex;align-items:baseline;gap:6px}
-.p-profit .v{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.15rem;color:var(--harvest);font-variant-numeric:tabular-nums}
+.p-profit .v{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.15rem;color:var(--mint-green);font-variant-numeric:tabular-nums}
 .p-profit .v.flash{animation:cellFlash 300ms var(--ease-out)}
 @keyframes cellFlash{0%{opacity:.25}100%{opacity:1}}
-.p-profit .cur{font-size:.75rem;color:var(--harvest);opacity:.8;font-weight:600}
-.p-sub{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--fog);font-variant-numeric:tabular-nums;white-space:nowrap}
-.p-sub .gold{color:var(--gold)} .p-sub .red{color:var(--blood)}
-
-/* ============ buttons (shape §6.4 + motion §4.1/§6) ============ */
-.actions{display:flex;gap:10px;margin-bottom:14px}
-button{font-family:inherit;cursor:pointer}
-.btn-save{
-  flex:1;border:none;border-radius:14px;padding:16px;font-size:1.02rem;font-weight:800;color:var(--harvest-ink);
-  background:#22C55E;
-  box-shadow:0 8px 26px rgba(34,197,94,.28),inset 0 -2px 0 rgba(0,0,0,.25);
-  transition:filter 150ms ease,transform var(--dur-tap) ease;
+.p-profit .cur{font-size:.75rem;color:var(--mint-green);opacity:.8;font-weight:600}
+.p-sub{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--fog);font-variant-numeric:tabular-nums}
+.p-sub .gold{color:var(--gold-foil)} .p-sub .red{color:var(--seal-red)}
+@media (max-width:360px){
+  .stepper button{width:44px;height:44px}
+  .stepper input{width:56px;font-size:1.2rem}
+  .p-sub{font-size:.66rem}
 }
-.btn-save:hover{filter:brightness(1.06)}
-.btn-save:active{transform:scale(.97);filter:brightness(1.1);transition-duration:var(--dur-tap)}
-.btn-save.shake{animation:shakeX 300ms linear}
-@keyframes shakeX{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-.btn-copy{
-  display:flex;align-items:center;gap:8px;
-  background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:14px;
-  padding:16px 20px;font-size:.92rem;font-weight:700;
-  transition:border-color 150ms ease,transform var(--dur-tap) ease,background-color 400ms ease;
-}
-.btn-copy:hover{border-color:var(--fog)}
-.btn-copy:active{transform:scale(.98)}
-.btn-copy.ok{background-color:rgba(43,227,107,.15)}
-.btn-copy svg{flex:none}
 
-/* ============ chart (shape §6.5 + motion §5 + effects E4) ============ */
+/* ============ ترويسة لوحة البيع + مدخل التاريخ الشبحي (layout P0-2) ============ */
+.sales-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sales-head h2{font-size:1.05rem;font-weight:700}
+.day-ghost{display:flex;align-items:center;gap:6px;margin-inline-start:auto;color:var(--fog);font-size:.76rem}
+.day-ghost input{
+  background:transparent;border:none;color:var(--fog);font-family:inherit;font-size:.76rem;
+  width:104px;padding:4px 2px;cursor:pointer;
+}
+.day-ghost input:focus{outline:1px solid var(--gold-foil);border-radius:6px}
+.yday{
+  display:flex;align-items:center;gap:6px;background:transparent;color:var(--gold-bright);
+  border:1px dashed var(--engrave-line);border-radius:999px;padding:7px 14px;
+  font-size:.76rem;font-weight:700;margin-bottom:14px;width:fit-content;
+  transition:background-color 150ms ease,transform var(--dur-tap) ease;
+}
+.yday:active{transform:scale(.97);background:rgba(217,169,46,.1)}
+
+/* ============ الرسم — «السبائك» (art-direction §6.4) + مبدّل المدة (F2) ============ */
+.seg{display:flex;gap:6px;margin-bottom:14px;background:var(--ledger-2);border:1px solid var(--engrave-line);border-radius:12px;padding:4px;width:fit-content}
+.seg button{
+  background:transparent;border:none;color:var(--fog);font-size:.78rem;font-weight:700;
+  padding:8px 16px;border-radius:9px;cursor:pointer;transition:background-color 180ms ease,color 180ms ease;
+}
+.seg button.on{background:var(--mint-dim);color:var(--mint-green)}
+.goal-seg button.on{background:rgba(217,169,46,.12);color:var(--gold-bright)}
 .chart-wrap{position:relative}
-canvas#weekChart{width:100%;height:200px;display:block;touch-action:manipulation}
+canvas#weekChart{width:100%;height:200px;display:block;touch-action:manipulation;border-radius:10px}
+canvas#weekChart:focus{outline:2px solid var(--gold-foil);outline-offset:2px}
 #chartTip{
   position:absolute;z-index:5;pointer-events:none;min-width:130px;max-width:170px;
-  background:#0E1830;border:1px solid var(--line);border-radius:10px;padding:8px 10px;
+  background:#0E1712;border:1px solid var(--engrave-line);border-radius:10px;padding:8px 10px;
   font-size:.72rem;line-height:1.9;color:var(--ink);
-  opacity:0;transform:translateY(6px);transition:opacity 200ms ease-out,transform 200ms ease-out;
+  opacity:0;visibility:hidden;transform:translateY(6px);transition:opacity 200ms ease-out,transform 200ms ease-out,visibility 0s 200ms;
   box-shadow:0 8px 24px rgba(0,0,0,.5);
 }
-#chartTip.show{opacity:1;transform:translateY(0)}
+#chartTip.show{opacity:1;visibility:visible;transform:translateY(0);transition:opacity 200ms ease-out,transform 200ms ease-out}
 #chartTip .tt-day{font-weight:700;font-size:.78rem}
-#chartTip .tt-p{color:var(--harvest);font-weight:700;font-family:'IBM Plex Mono',monospace}
+#chartTip .tt-p{color:var(--mint-green);font-weight:700;font-family:'IBM Plex Mono',monospace}
 #chartTip .tt-s{color:var(--fog)}
 .week-stats{display:flex;align-items:center;gap:14px;margin-top:12px;font-size:.82rem}
 .week-stats .ws{display:flex;flex-direction:column;gap:2px}
 .week-stats .k{color:var(--fog);font-size:.72rem}
 .week-stats .v{font-weight:800;font-size:1rem}
-.week-stats .v.green{color:var(--harvest)} .week-stats .v.gold{color:var(--gold)}
+.week-stats .v.green{color:var(--mint-green)} .week-stats .v.gold{color:var(--gold-foil)}
 .week-stats .vdiv{width:1px;align-self:stretch;background:var(--hairline)}
 
-/* ============ history (shape §6.6 + motion §7.2/§7.3) ============ */
+/* ============ السجل — «دفتر الأستاذ» (art-direction §6.5) ============ */
 .hist-empty{color:var(--fog);text-align:center;padding:24px 10px;font-size:.88rem;line-height:2}
 .hrow{display:flex;align-items:center;gap:10px;padding:13px 2px;border-top:1px solid var(--hairline);overflow:hidden}
 .hrow:first-of-type{border-top:none}
 .hrow.enter{animation:rowIn 300ms var(--ease-out) 100ms both}
 @keyframes rowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.hrow.leaving{transition:opacity 260ms ease,transform 260ms ease,height 260ms ease,padding 260ms ease !important;opacity:0 !important;transform:translateX(-16px) !important;height:0 !important;padding-top:0 !important;padding-bottom:0 !important;border-top-width:0}
+.hrow.leaving{transition:opacity 260ms ease,transform 260ms ease,height 260ms ease,padding 260ms ease;opacity:0;transform:translateX(-16px);height:0;padding-top:0;padding-bottom:0;border-top-width:0}
 .hd{flex:1;min-width:0}
+.hd .vno{font-size:.68rem;color:var(--gold-foil);font-weight:700;letter-spacing:0}
 .hd .date{font-weight:700;font-size:.88rem}
 .hd .sub{color:var(--fog);font-size:.72rem;margin-top:4px;line-height:1.8}
-.hp{text-align:left;font-weight:700;font-size:1rem;color:var(--harvest);flex:none;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+.hp{text-align:left;font-weight:700;font-size:1rem;color:var(--mint-green);flex:none;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
 .hp small{display:block;color:var(--fog);font-weight:500;font-size:.7rem;margin-top:2px;font-family:'Cairo',sans-serif}
 .del{
-  background:transparent;color:var(--fog);border:1px solid var(--line);border-radius:10px;
-  width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex:none;
+  background:transparent;color:var(--fog);border:1px solid var(--engrave-line);border-radius:10px;
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex:none;
   transition:color 150ms ease,border-color 150ms ease,transform 80ms ease;
 }
-.del:hover{color:var(--blood);border-color:var(--blood)}
-.del:active{color:var(--blood);border-color:var(--blood);transform:scale(.95)}
+.del:hover{color:var(--seal-red);border-color:var(--seal-red)}
+.del:active{color:var(--seal-red);border-color:var(--seal-red);transform:scale(.95)}
 .del svg{width:16px;height:16px}
 .htotal{
   display:flex;justify-content:space-between;align-items:center;
-  background:var(--harvest-dim);border:1px solid rgba(43,227,107,.35);
+  background:var(--mint-dim);border:1px solid rgba(43,191,102,.35);
   border-radius:14px;padding:14px 16px;margin-top:14px;font-weight:800;
-  opacity:0;transition:opacity 200ms ease;
+  opacity:0;transition:opacity 200ms ease;border-top:2px solid var(--gold-foil);
 }
 .htotal.on{opacity:1}
-.htotal .tv{color:var(--harvest);font-size:1.2rem;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+.htotal .tv{color:var(--mint-green);font-size:1.2rem;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
 
-/* ============ settings — بطاقة واحدة (shape §6.7) ============ */
-details.settings{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px}
+/* ============ الإعدادات — مجموعات لكل منتج (structure #3) ============ */
+details.settings{background:var(--ledger);border:1px solid var(--engrave-line);border-radius:var(--radius);margin-bottom:16px}
 details.settings summary{
   list-style:none;cursor:pointer;padding:16px 18px;font-weight:700;font-size:.95rem;
   display:flex;align-items:center;gap:10px;
@@ -308,129 +364,232 @@ details.settings summary{
 details.settings summary::-webkit-details-marker{display:none}
 details.settings summary .chev{margin-inline-start:auto;transition:transform 300ms var(--ease-out);color:var(--fog);flex:none}
 details.settings[open] summary .chev{transform:rotate(180deg)}
-details.settings summary svg{flex:none;color:var(--fog)}
+details.settings summary svg{flex:none;color:var(--ink);opacity:.8}
 .set-body{padding:0 18px 18px}
+.set-group{border:1px solid var(--hairline);border-radius:12px;padding:14px;margin-bottom:12px}
+.set-group:last-child{margin-bottom:0}
+.set-group>h3{font-size:.82rem;font-weight:700;color:var(--gold-bright);margin-bottom:12px}
 .set-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.set-grid{grid-template-columns:1fr}}
 .field{display:flex;flex-direction:column;gap:6px}
 .field.full{grid-column:1/-1}
 .field label{font-size:.76rem;color:var(--fog);font-weight:500}
-.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:.95rem;padding:10px 12px;width:100%;font-family:inherit}
-.field input:focus{outline:none;border-color:var(--harvest);box-shadow:0 0 0 3px rgba(43,227,107,.16)}
+.field input{background:var(--ledger-2);border:1px solid var(--engrave-line);border-radius:10px;color:var(--ink);font-size:.95rem;padding:10px 12px;width:100%;font-family:inherit}
+.field input:focus{outline:none;border-color:var(--mint-green);box-shadow:0 0 0 3px rgba(43,191,102,.16)}
+.field .fhint{font-size:.7rem;color:var(--fog);opacity:.85}
 
-/* ============ celebration (effects E1/E2 + motion §4.2) ============ */
+/* ============ شريط الختم الثابت (structure #1 + usability #2) ============ */
+.savebar{
+  position:fixed;bottom:0;left:0;right:0;z-index:40;
+  padding:10px 14px calc(10px + max(env(safe-area-inset-bottom),0px));
+  background:rgba(7,16,9,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-top:1px solid var(--engrave-line);
+}
+.savebar .sb-in{max-width:620px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.savebar .sb-info{flex:1;min-width:0}
+.savebar .sb-profit{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.15rem;color:var(--mint-green);font-variant-numeric:tabular-nums;line-height:1.1}
+.savebar .sb-date{font-size:.68rem;color:var(--fog);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn-stamp{
+  border:none;border-radius:14px;padding:14px 22px;font-size:.95rem;font-weight:800;color:var(--mint-ink);
+  background:var(--mint-green);
+  border-bottom:3px solid rgba(0,0,0,.45);
+  box-shadow:0 4px 18px rgba(43,191,102,0);
+  transition:box-shadow 300ms ease,filter 150ms ease,transform var(--dur-tap) ease;
+  position:relative;overflow:hidden;flex:none;
+}
+.btn-stamp:hover{filter:brightness(1.05)}
+.btn-stamp:active{transform:translateY(2px);border-bottom-width:1px;transition-duration:var(--dur-tap)}
+.btn-stamp.shake{animation:shakeX 300ms linear}
+@keyframes shakeX{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+/* شحن زر الختم (PM6) */
+.btn-stamp::after{
+  content:"";position:absolute;top:0;bottom:0;width:44px;left:-70px;
+  background:linear-gradient(100deg,transparent,rgba(240,199,94,.5),transparent);
+  transform:skewX(-18deg);opacity:0;
+}
+.btn-stamp.charged{animation:sheen 2.4s linear infinite}
+.btn-stamp.charged::after{opacity:1}
+@keyframes sheen{0%{left:-70px}100%{left:calc(100% + 26px)}}
+.btn-copybar{
+  flex:none;width:52px;height:52px;border-radius:14px;background:transparent;
+  border:1px solid var(--engrave-line);color:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color 150ms ease,transform var(--dur-tap) ease,background-color 400ms ease;
+}
+.btn-copybar:active{transform:scale(.95)}
+.btn-copybar.ok{background-color:var(--mint-dim)}
+
+/* ============ الاحتفال — «الختم» (art-direction §6.3) ============ */
 .overlay{
   position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
-  background:rgba(1,4,9,.72);
-  opacity:0;pointer-events:none;transition:opacity 300ms ease;
+  background:rgba(4,10,6,.74);
+  opacity:0;visibility:hidden;pointer-events:none;transition:opacity 300ms ease,visibility 0s 300ms;
 }
-.overlay.show{opacity:1;pointer-events:auto;animation:ovin 300ms ease both}
-@keyframes ovin{from{backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0)}to{backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}}
-.overlay.show{backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity 300ms ease;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .overlay.leaving{opacity:0;transition:opacity 250ms ease}
-.pop{
-  position:relative;text-align:center;padding:38px 46px;background:var(--panel);
-  border:1px solid rgba(43,227,107,.4);border-radius:24px;
-  box-shadow:0 0 80px rgba(43,227,107,.22);
+.stamp{
+  position:relative;text-align:center;padding:38px 46px;background:var(--ledger);
+  border:1px solid var(--engrave-line);border-radius:24px;
+  box-shadow:0 22px 60px rgba(0,0,0,.6);
   opacity:0;
 }
-.overlay.show .pop{animation:popin var(--dur-moment) var(--ease-out) 60ms both}
-@keyframes popin{from{opacity:0;transform:scale(.92);filter:blur(5px)}to{opacity:1;transform:scale(1);filter:blur(0)}}
-.pop.gold-glow{border-color:rgba(245,184,31,.55);box-shadow:0 0 90px rgba(245,184,31,.28)}
-/* حلقة نابضة واحدة خلف البطاقة (shape §6.8) */
-.pulse-ring{
-  position:absolute;top:50%;left:50%;width:120px;height:120px;margin:-60px 0 0 -60px;
-  border:2px solid var(--harvest);border-radius:50%;pointer-events:none;opacity:0;
+/* الختم يضرب: 1.35 ← 1.0 في 160ms (art-direction §4) */
+.overlay.show .stamp{animation:stampIn 160ms var(--ease-stamp) 60ms both}
+@keyframes stampIn{from{opacity:0;transform:scale(1.35)}to{opacity:1;transform:scale(1)}}
+.stamp .seal-ring{
+  position:absolute;inset:10px;border:1px solid var(--engrave-line);border-radius:18px;pointer-events:none;
 }
-.overlay.show .pulse-ring{animation:ringOut 900ms var(--ease-out) both}
-@keyframes ringOut{from{opacity:.8;transform:scale(.6)}to{opacity:0;transform:scale(1.6)}}
-.check{width:84px;height:84px;margin:0 auto 18px}
-.check circle{stroke:var(--harvest);stroke-width:3;fill:none;stroke-dasharray:290;stroke-dashoffset:290}
-.check path{stroke:var(--harvest);stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:80;stroke-dashoffset:80}
-.overlay.show .check circle{animation:draw 550ms var(--ease-draw) 350ms both}
-.overlay.show .check path{animation:draw 400ms var(--ease-draw) 500ms both}
-@keyframes draw{to{stroke-dashoffset:0}}
-.pop .amt{font-size:2.2rem;font-weight:700;color:var(--harvest);margin-bottom:6px;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
-.pop .msg{color:var(--fog);font-size:.9rem}
-/* شارات الإنجاز (effects E2/E6a) */
-#popBadge,#popRecord{
+.stamp.gold-stamp{border-color:rgba(217,169,46,.55)}
+.stamp .amt{font-size:2.2rem;font-weight:700;color:var(--mint-green);margin-bottom:6px;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+.stamp .msg{color:var(--fog);font-size:.9rem}
+/* أختام الإنجاز (E2/E6a + G5) */
+#popBadge,#popRecord,#popStreak{
   display:none;align-items:center;justify-content:center;gap:8px;
   margin:14px auto 0;padding:8px 16px;border-radius:999px;
   font-size:.82rem;font-weight:800;width:fit-content;
 }
-#popBadge.show,#popRecord.show{display:flex;animation:badgeIn 400ms var(--ease-out) both}
-@keyframes badgeIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
-#popBadge.m25{background:var(--harvest-dim);color:var(--harvest);border:1px solid rgba(43,227,107,.4)}
-#popBadge.m50,#popBadge.m100{background:rgba(245,184,31,.14);color:var(--gold);border:1px solid rgba(245,184,31,.45)}
-#popRecord{background:rgba(245,184,31,.14);color:var(--gold);border:1px solid rgba(245,184,31,.45)}
-#popFirst{display:none;color:var(--fog);font-size:.76rem;margin-top:12px}
-#popFirst.show{display:block;animation:fadeIn 400ms ease 600ms both}
-/* جسيمات الاحتفال + الرقم الطائر */
+#popBadge.show,#popRecord.show,#popStreak.show{display:flex;animation:sealIn 400ms var(--ease-out) both}
+@keyframes sealIn{from{opacity:0;transform:scale(1.25) rotate(8deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+#popBadge.m25{background:var(--mint-dim);color:var(--mint-green);border:1px solid rgba(43,191,102,.4)}
+#popBadge.m50,#popBadge.m100{background:rgba(217,169,46,.14);color:var(--gold-bright);border:1px solid rgba(217,169,46,.45)}
+#popRecord{background:rgba(217,169,46,.14);color:var(--gold-bright);border:1px solid rgba(217,169,46,.45)}
+#popStreak{background:var(--mint-dim);color:var(--mint-green);border:1px solid rgba(43,191,102,.4)}
+/* غبار الختم الذهبي + الرقم الطائر */
 #partyCanvas{position:fixed;inset:0;z-index:65;pointer-events:none}
 .fly-num{
   position:fixed;z-index:64;pointer-events:none;
-  font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:2rem;color:var(--harvest);
+  font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:2rem;color:var(--mint-green);
   font-variant-numeric:tabular-nums;white-space:nowrap;
 }
-/* ومضة vignette الذهبية (E2 — عتبة 100) */
 #goldFlash{
   position:fixed;inset:0;z-index:63;pointer-events:none;opacity:0;
-  background:radial-gradient(ellipse at center,transparent 45%,rgba(245,184,31,.5) 100%);
+  background:radial-gradient(ellipse at center,transparent 45%,rgba(217,169,46,.5) 100%);
 }
 #goldFlash.go{animation:goldflash 1.2s ease-in-out both}
-@keyframes goldflash{0%{opacity:0}35%{opacity:.35}100%{opacity:0}}
+@keyframes goldflash{0%{opacity:0}35%{opacity:.22}100%{opacity:0}}
 
-.toast{
-  position:fixed;bottom:26px;right:50%;transform:translateX(50%) translateY(16px);
-  background:#16A34A;color:#04140A;font-weight:700;font-size:.88rem;white-space:nowrap;
-  padding:13px 24px;border-radius:14px;opacity:0;pointer-events:none;z-index:70;
-  box-shadow:0 10px 30px rgba(0,0,0,.45);
-  transition:opacity 300ms var(--ease-out),transform 300ms var(--ease-out);
+/* ============ التأكيد داخل التطبيق (بدل confirm الأصلية) ============ */
+.cmodal{
+  position:fixed;inset:0;z-index:75;display:flex;align-items:center;justify-content:center;
+  background:rgba(4,10,6,.7);padding:20px;
+  opacity:0;visibility:hidden;pointer-events:none;transition:opacity 250ms ease,visibility 0s 250ms;
 }
-.toast.show{opacity:1;transform:translateX(50%) translateY(0)}
+.cmodal.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity 250ms ease}
+.cmodal .cm-card{
+  background:var(--ledger);border:1px solid var(--engrave-line);border-radius:18px;
+  padding:26px 24px;max-width:340px;width:100%;text-align:center;
+  box-shadow:0 22px 60px rgba(0,0,0,.6);
+}
+.cmodal.show .cm-card{animation:stampIn 180ms var(--ease-stamp) both}
+.cmodal .cm-title{font-weight:800;font-size:1.02rem;margin-bottom:8px}
+.cmodal .cm-msg{color:var(--fog);font-size:.88rem;line-height:1.9;margin-bottom:20px}
+.cmodal .cm-row{display:flex;gap:10px}
+.cmodal .cm-ok{
+  flex:1;border:none;border-radius:12px;padding:13px;font-weight:800;font-size:.92rem;
+  background:var(--seal-red);color:#FFF5F0;cursor:pointer;border-bottom:3px solid rgba(0,0,0,.4);
+}
+.cmodal .cm-ok:active{transform:translateY(2px);border-bottom-width:1px}
+.cmodal .cm-cancel{
+  flex:1;border-radius:12px;padding:13px;font-weight:700;font-size:.92rem;cursor:pointer;
+  background:transparent;color:var(--ink);border:1px solid var(--engrave-line);
+}
+
+/* ============ التنبيه (toast) ============ */
+.toast{
+  position:fixed;bottom:calc(104px + max(env(safe-area-inset-bottom),0px));right:50%;transform:translateX(50%) translateY(16px);
+  background:var(--mint-green);color:var(--mint-ink);font-weight:700;font-size:.88rem;
+  max-width:92vw;
+  padding:13px 24px;border-radius:14px;opacity:0;visibility:hidden;pointer-events:none;z-index:70;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);
+  transition:opacity 300ms var(--ease-out),transform 300ms var(--ease-out),visibility 0s 300ms;
+  display:flex;align-items:center;gap:12px;
+}
+.toast.show{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(50%) translateY(0);transition:opacity 300ms var(--ease-out),transform 300ms var(--ease-out)}
 .toast.leaving{opacity:0;transform:translateX(50%) translateY(8px);transition:opacity 250ms ease,transform 250ms ease}
+.toast .t-act{
+  border:none;background:rgba(4,20,10,.18);color:var(--mint-ink);font-weight:800;font-size:.82rem;
+  border-radius:8px;padding:7px 12px;cursor:pointer;flex:none;
+}
+
+/* ============ بانر التحديث + بطاقة التثبيت ============ */
+#updateBar{
+  position:fixed;bottom:calc(96px + max(env(safe-area-inset-bottom),0px));left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--ledger);border:1px solid var(--gold-foil);border-radius:14px;
+  display:none;align-items:center;gap:12px;padding:12px 16px;z-index:55;
+  box-shadow:0 12px 32px rgba(0,0,0,.55);font-size:.84rem;font-weight:700;white-space:nowrap;
+}
+#updateBar.show{display:flex;animation:riseIn 300ms var(--ease-out) both}
+#updateBar button{
+  border:none;border-radius:10px;background:var(--gold-foil);color:#1A1408;font-weight:800;
+  font-size:.8rem;padding:9px 16px;cursor:pointer;
+}
+#iosCard{
+  display:none;background:var(--ledger);border:1px solid var(--engrave-line);border-radius:14px;
+  padding:16px;margin-bottom:16px;font-size:.84rem;line-height:2;color:var(--fog);
+}
+#iosCard.show{display:block}
+#iosCard b{color:var(--ink)}
+#iosCard .x{background:transparent;border:1px solid var(--engrave-line);color:var(--fog);border-radius:8px;padding:6px 14px;font-size:.76rem;margin-top:8px;cursor:pointer}
 
 footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-height:2;opacity:.8}
-
-@media (max-width:480px){
-  .set-grid{grid-template-columns:1fr}
+#installBtn{
+  display:none;margin:14px auto 0;background:transparent;color:var(--gold-bright);
+  border:1px solid var(--engrave-line);border-radius:12px;padding:10px 22px;
+  font-size:.82rem;font-weight:700;cursor:pointer;
 }
-/* ============ reduced motion: كل شيء فوري (motion §1 + effects) ============ */
+#installBtn.show{display:block}
+
+/* ============ reduced motion: كل شيء فوري ============ */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:1ms !important;animation-iteration-count:1 !important;transition-duration:1ms !important}
-  .live-dot,.sdot{animation:none !important}
   .in1,.in2,.in3,.in4,.in5{animation:none !important;opacity:1 !important}
+  .btn-stamp.charged{animation:none !important}
 }
 </style>
 </head>
 <body>
-<div id="glowbreath"></div>
-<canvas id="dust"></canvas>
+<canvas id="dust" aria-hidden="true"></canvas>
 <div class="wrap">
 
   <header class="top in1">
-    <h1>حاسبة أرباح المتجر <span class="tick">.</span></h1>
+    <h1>حصّالة اليوم <span class="tick">.</span></h1>
     <div class="today-line"><span class="live-dot"></span><span id="todayLine"></span></div>
     <div id="streakBadge"><span class="sdot"></span><span id="streakTxt"></span></div>
   </header>
+  <div id="heroSentinel" style="height:1px"></div>
 
-  <!-- العدّاد البطولي sticky أولًا (shape §5) -->
-  <section class="hero in3" id="heroPanel" aria-label="صافي ربح اليوم">
-    <span class="hero-frame"><i></i></span>
-    <div class="h-label">صافي ربح اليوم</div>
-    <div class="h-value"><span id="odo" class="odo" aria-hidden="true"></span><span class="sr-only" id="heroSr" aria-live="polite">0 ر.س</span></div>
+  <!-- العدّاد البطولي — وجه العملة -->
+  <section class="hero in3" id="heroPanel" aria-label="ربحك اليوم">
+    <span class="wm" aria-hidden="true"></span>
+    <div class="h-label">ربحك اليوم<span id="recStar" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg></span></div>
+    <div class="h-value"><span id="odoWrap"><span id="odo" class="odo" aria-hidden="true"></span><span id="goldSweep"></span></span><span class="sr-only" id="heroSr" aria-live="polite">0 ر.س</span></div>
     <div class="h-cur">ر.س</div>
     <div class="h-sub">
-      <span>المبيعات <b class="num" id="t_rev" style="color:var(--gold)">0</b></span>
-      <span>التكلفة <b class="num" id="t_cst" style="color:var(--blood)">0</b></span>
+      <span>بعت <b class="num" id="t_rev" style="color:var(--gold-foil)">0</b></span>
+      <span class="vline"></span>
+      <span>الكلفة <b class="num" id="t_cst" style="color:var(--seal-red)">0</b></span>
     </div>
-    <div class="day-pick">
-      <label for="day">التاريخ</label>
-      <input type="date" id="day">
+    <div id="recChip">رقم قياسي</div>
+    <div class="goalbar" id="goalBar">
+      <div class="gb-track"><div class="gb-fill" id="gbFill"></div></div>
+      <div class="gb-txt" id="gbTxt"></div>
+    </div>
+    <div class="h-slim">
+      <span class="sl">ربحك اليوم</span>
+      <span class="sv num" id="odoSlim">0</span>
+      <span class="sc">ر.س</span>
     </div>
   </section>
 
-  <section class="panel in2" aria-label="مبيعات اليوم">
-    <h2>مبيعات اليوم</h2>
+  <section class="panel in2" aria-label="بيع اليوم">
+    <div class="sales-head">
+      <h2>بيع اليوم</h2>
+      <label class="day-ghost" for="day">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <input type="date" id="day" aria-label="تاريخ المبيعات">
+      </label>
+    </div>
+    <button type="button" class="yday" id="ydayBtn">نفس مبيعات أمس</button>
 
     <div class="prow">
       <div class="p-top">
@@ -440,13 +599,13 @@ footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-
       </div>
       <div class="p-mid">
         <div class="stepper" role="group" aria-label="عدد اشتراكات جيميناي">
-          <button type="button" data-t="g" data-s="-1" aria-label="إنقاص">−</button>
-          <input type="number" id="g_qty" class="num" value="0" min="0" inputmode="numeric" aria-label="عدد المباع">
-          <button type="button" data-t="g" data-s="1" aria-label="زيادة">+</button>
+          <button type="button" data-t="g" data-s="-1" aria-label="إنقاص عدد جيميناي">−</button>
+          <input type="number" id="g_qty" class="num" value="0" min="0" inputmode="numeric" aria-label="عدد اشتراكات جيميناي المباعة">
+          <button type="button" data-t="g" data-s="1" aria-label="زيادة عدد جيميناي">+</button>
         </div>
         <div class="p-read">
           <div class="p-profit"><span class="v num" id="g_prf">0</span><span class="cur">ر.س ربح</span></div>
-          <div class="p-sub"><span class="gold" id="g_rev">0</span> بيع · <span class="red" id="g_cst">0</span> تكلفة</div>
+          <div class="p-sub"><span class="gold num" id="g_rev">0</span> بيع | <span class="red num" id="g_cst">0</span> كلفة</div>
         </div>
       </div>
     </div>
@@ -459,125 +618,202 @@ footer{color:var(--fog);text-align:center;font-size:.74rem;margin-top:28px;line-
       </div>
       <div class="p-mid">
         <div class="stepper" role="group" aria-label="عدد اشتراكات دولينجو">
-          <button type="button" data-t="d" data-s="-1" aria-label="إنقاص">−</button>
-          <input type="number" id="d_qty" class="num" value="0" min="0" inputmode="numeric" aria-label="عدد المباع">
-          <button type="button" data-t="d" data-s="1" aria-label="زيادة">+</button>
+          <button type="button" data-t="d" data-s="-1" aria-label="إنقاص عدد دولينجو">−</button>
+          <input type="number" id="d_qty" class="num" value="0" min="0" inputmode="numeric" aria-label="عدد اشتراكات دولينجو المباعة">
+          <button type="button" data-t="d" data-s="1" aria-label="زيادة عدد دولينجو">+</button>
         </div>
         <div class="p-read">
           <div class="p-profit"><span class="v num" id="d_prf">0</span><span class="cur">ر.س ربح</span></div>
-          <div class="p-sub"><span class="gold" id="d_rev">0</span> بيع · <span class="red" id="d_cst">0</span> تكلفة</div>
+          <div class="p-sub"><span class="gold num" id="d_rev">0</span> بيع | <span class="red num" id="d_cst">0</span> كلفة</div>
         </div>
       </div>
     </div>
   </section>
 
-  <div class="actions in2">
-    <button class="btn-save" id="saveBtn" type="button">احفظ نتيجة اليوم</button>
-    <button class="btn-copy" id="copyBtn" type="button">
-      <svg id="copyIco" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
-      <svg id="copyOk" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M20 6L9 17l-5-5"/></svg>
-      <span id="copyLbl">انسخ الملخص</span>
-    </button>
+  <div id="iosCard">
+    <b>ثبّت حصّالة اليوم على شاشتك:</b><br>
+    اضغط زر المشاركة في سفاري ← «إضافة إلى الشاشة الرئيسية»
+    <br><button type="button" class="x" id="iosCardX">فهمت</button>
   </div>
 
-  <section class="panel chart-wrap in4" aria-label="أرباح آخر 7 أيام" id="chartPanel">
+  <section class="panel in4" aria-label="نبض الأرباح" id="chartPanel">
     <h2>نبض الأسبوع</h2>
-    <p class="hint">العمود الذهبي = أفضل يوم — المس أي عمود للتفاصيل</p>
-    <canvas id="weekChart"></canvas>
-    <div id="chartTip"></div>
+    <div class="seg" role="group" aria-label="مدة الرسم">
+      <button type="button" data-range="7" class="on">7 أيام</button>
+      <button type="button" data-range="30">30 يومًا</button>
+      <button type="button" data-range="all">الكل</button>
+    </div>
+    <p class="hint">المس أي عمود وشوف تفاصيله</p>
+    <div class="chart-wrap">
+      <canvas id="weekChart" tabindex="0" role="img" aria-label="رسم أعمدة لأرباح الأيام"></canvas>
+      <div id="chartTip"></div>
+    </div>
+    <div class="sr-only" id="chartLive" aria-live="polite"></div>
     <div class="week-stats">
-      <div class="ws"><span class="k">مجموع 7 أيام</span><span class="v green num" id="w_total">0 ر.س</span></div>
+      <div class="ws"><span class="k" id="wsTotalK">حصيلة 7 أيام</span><span class="v green num" id="w_total">0 ر.س</span></div>
       <span class="vdiv"></span>
       <div class="ws"><span class="k">أفضل يوم</span><span class="v gold" id="w_best">—</span></div>
     </div>
   </section>
 
-  <section class="panel in5" aria-label="سجل الأيام" id="historyPanel">
-    <h2>سجل الأيام</h2>
+  <section class="panel in5" aria-label="دفتر الأرباح" id="historyPanel">
+    <h2 id="histTitle" tabindex="-1">دفتر الأرباح</h2>
     <div id="history"></div>
     <div class="htotal" id="grandTotal" style="display:none">
-      <span>مجموع أرباح كل الأيام</span>
+      <span>إجمالي أرباحك</span>
       <span class="tv num" id="grandVal">0 ر.س</span>
     </div>
   </section>
 
   <details class="settings in5" id="settingsDet">
     <summary>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      تعديل الأسعار والتكاليف
-      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a2 2 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      الأسعار والتكاليف
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
     </summary>
     <div class="set-body">
-      <div class="set-grid">
-        <div class="field full">
-          <label for="rate">سعر الصرف (ر.س لكل دولار)</label>
-          <input type="number" id="rate" class="num" value="4" min="0.1" step="0.01" inputmode="decimal">
+      <div class="set-group">
+        <h3>جيميناي برو</h3>
+        <div class="set-grid">
+          <div class="field">
+            <label for="g_price">سعر البيع (ر.س)</label>
+            <input type="number" id="g_price" class="num" value="5" min="0" step="0.5" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="g_cost">التكلفة ($)</label>
+            <input type="number" id="g_cost" class="num" value="0.40" min="0" step="0.01" inputmode="decimal">
+          </div>
         </div>
-        <div class="field">
-          <label for="g_price">جيميناي — سعر البيع (ر.س)</label>
-          <input type="number" id="g_price" class="num" value="5" min="0" step="0.5" inputmode="decimal">
+      </div>
+      <div class="set-group">
+        <h3>دولينجو سوبر</h3>
+        <div class="set-grid">
+          <div class="field">
+            <label for="d_price">سعر البيع (ر.س)</label>
+            <input type="number" id="d_price" class="num" value="15" min="0" step="0.5" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="d_cost">التكلفة ($)</label>
+            <input type="number" id="d_cost" class="num" value="0.50" min="0" step="0.01" inputmode="decimal">
+          </div>
         </div>
-        <div class="field">
-          <label for="g_cost">جيميناي — التكلفة ($)</label>
-          <input type="number" id="g_cost" class="num" value="0.40" min="0" step="0.01" inputmode="decimal">
-        </div>
-        <div class="field">
-          <label for="d_price">دولينجو — سعر البيع (ر.س)</label>
-          <input type="number" id="d_price" class="num" value="15" min="0" step="0.5" inputmode="decimal">
-        </div>
-        <div class="field">
-          <label for="d_cost">دولينجو — التكلفة ($)</label>
-          <input type="number" id="d_cost" class="num" value="0.50" min="0" step="0.01" inputmode="decimal">
+      </div>
+      <div class="set-group">
+        <h3>عام</h3>
+        <div class="set-grid">
+          <div class="field">
+            <label for="rate">سعر الصرف (ر.س لكل دولار)</label>
+            <input type="number" id="rate" class="num" value="4" min="0.1" step="0.01" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="goalAmt">هدفك؟ (ر.س)</label>
+            <input type="number" id="goalAmt" class="num" min="0" step="10" inputmode="numeric" placeholder="مثال: 200">
+          </div>
+          <div class="field full">
+            <label>مدة الهدف</label>
+            <div class="seg goal-seg" role="group" aria-label="مدة الهدف" style="margin-bottom:0">
+              <button type="button" data-goalperiod="week" class="on">أسبوعي</button>
+              <button type="button" data-goalperiod="month">شهري</button>
+            </div>
+            <span class="fhint">اتركه فاضي إذا ما تبي هدف — كل شي يشتغل عادي بدونه</span>
+          </div>
         </div>
       </div>
     </div>
   </details>
 
   <footer class="in5">
-    البيانات محفوظة على جهازك فقط — ما تطلع لأي مكان<br>
-    الأسعار والتكاليف تنحفظ تلقائيًا وتتذكرها الصفحة
+    بياناتك على جهازك بس. ما تطلع لأحد<br>
+    أسعارك تنحفظ تلقائيًا
+    <br><button type="button" id="installBtn">ثبّت التطبيق</button>
   </footer>
 </div>
 
-<div class="overlay" id="overlay" role="status">
-  <div class="pop" id="popCard">
-    <span class="pulse-ring"></span>
-    <svg class="check" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46"/><path d="M32 51l13 13 24-27"/></svg>
+<!-- شريط الختم الثابت -->
+<div class="savebar">
+  <div class="sb-in">
+    <div class="sb-info">
+      <div class="sb-profit num" id="sbProfit">0</div>
+      <div class="sb-date" id="sbDate">سيُحفظ في: اليوم</div>
+    </div>
+    <button class="btn-stamp" id="stampBtn" type="button">اختم اليوم</button>
+    <button class="btn-copybar" id="copyBtn" type="button" aria-label="انسخ الملخص">
+      <svg id="copyIco" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+      <svg id="copyOk" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+    </button>
+  </div>
+</div>
+
+<div id="updateBar"><span>نسخة جديدة متوفرة</span><button type="button" id="updateGo">حدّث</button></div>
+
+<!-- الاحتفال — الختم -->
+<div class="overlay" id="overlay">
+  <div class="stamp" id="popCard">
+    <span class="seal-ring"></span>
     <div class="amt num" id="popAmt">+0 ر.س</div>
     <div id="popRecord"></div>
     <div id="popBadge"></div>
-    <div class="msg">انحفظت في سجل اليوم — يعطيك العافية</div>
-    <div id="popFirst">من بكرة: زِد العدّاد واضغط زرًا واحدًا وخلاص</div>
+    <div id="popStreak"></div>
+    <div class="msg">الربح في الجيب. يعطيك العافية</div>
   </div>
 </div>
 <div id="goldFlash"></div>
 
-<div class="toast" id="toast"></div>
+<!-- التأكيد داخل التطبيق -->
+<div class="cmodal" id="cmodal" role="dialog" aria-modal="true" aria-labelledby="cmTitle">
+  <div class="cm-card">
+    <div class="cm-title" id="cmTitle"></div>
+    <div class="cm-msg" id="cmMsg"></div>
+    <div class="cm-row">
+      <button type="button" class="cm-ok" id="cmOk"></button>
+      <button type="button" class="cm-cancel" id="cmCancel">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
 
 <script>
 (function(){
 'use strict';
 var LS='store-profit-v2', SEED='store-profit-seeded-v2', MILES=LS+'.miles', FIRST=LS+'.firstsave';
+var GOAL=LS+'.goal', GOALHIT=LS+'.goalhit', IOSX=LS+'.iosx', SMILES=LS+'.streakmiles';
 var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function $(id){return document.getElementById(id);}
 function num(id){var v=parseFloat($(id).value);return isFinite(v)&&v>=0?v:0;}
 function fmt(n){return parseFloat(n.toFixed(2)).toLocaleString('en-US');}
+function fmt2(n){return (Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function money(n){return fmt(n)+' ر.س';}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function buzz(p){ if(reduced) return; try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+function lastInteract(){ amb.last=performance.now(); if(!amb.raf&&!reduced){ambInit();amb.raf=requestAnimationFrame(ambLoop);} }
+document.addEventListener('pointerdown',lastInteract,{passive:true});
 
-/* ---------- toast بدخول وخروج متدرج (motion §7.4) ---------- */
-var toastT1=null,toastT2=null;
-function toast(m){
+/* ---------- toast (role=status + visibility) ---------- */
+var toastT1=null,toastT2=null,toastHasAction=false;
+function toastBase(html,ms,action){
   var t=$('toast');
-  t.textContent=m;
+  /* تنبيه الإجراء (تراجع) أهم — لا يمحوّه تنبيه عادي */
+  if(!action&&toastHasAction&&t.classList.contains('show'))return;
+  t.innerHTML='';
+  var s=document.createElement('span');s.textContent=html;t.appendChild(s);
+  toastHasAction=!!action;
+  if(action){
+    var b=document.createElement('button');b.type='button';b.className='t-act';b.textContent=action.label;
+    b.addEventListener('click',function(){clearTimeout(toastT1);clearTimeout(toastT2);hideT();action.fn();});
+    t.appendChild(b);
+  }
   t.classList.remove('leaving');t.classList.add('show');
   clearTimeout(toastT1);clearTimeout(toastT2);
   toastT1=setTimeout(function(){
     t.classList.add('leaving');
-    toastT2=setTimeout(function(){t.classList.remove('show');t.classList.remove('leaving');},260);
-  },2200);
+    toastT2=setTimeout(hideT,260);
+  },ms||2200);
+  function hideT(){t.classList.remove('show');t.classList.remove('leaving');toastHasAction=false;}
 }
+function toast(m){toastBase(m,2200,null);}
+function toastUndo(label,fn){toastBase(label,8000,{label:'تراجع',fn:fn});}
+
 function todayRiyadh(){return new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'});}
 function prevDay(iso){return new Date(new Date(iso+'T12:00:00').getTime()-864e5).toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'});}
 function fmtDate(iso,style){
@@ -597,6 +833,8 @@ function loadCfg(){
 function saveCfg(c){localStorage.setItem(LS+'.cfg',JSON.stringify(c));}
 function loadHist(){try{return JSON.parse(localStorage.getItem(LS+'.hist'))||[];}catch(e){return[];}}
 function saveHist(h){localStorage.setItem(LS+'.hist',JSON.stringify(h));}
+function loadGoal(){try{var g=JSON.parse(localStorage.getItem(GOAL));if(g&&g.amount>0)return g;}catch(e){}return null;}
+function saveGoal(g){if(g&&g.amount>0)localStorage.setItem(GOAL,JSON.stringify(g));else localStorage.removeItem(GOAL);}
 function totals(e){
   var rev=e.g.price*e.g.qty+e.d.price*e.d.qty;
   var cst=e.g.costUSD*e.rate*e.g.qty+e.d.costUSD*e.rate*e.d.qty;
@@ -605,8 +843,7 @@ function totals(e){
 function brokenMiles(){try{return JSON.parse(localStorage.getItem(MILES))||[];}catch(e){return[];}}
 function seed(){
   if(localStorage.getItem(SEED))return;
-  var t=todayRiyadh();
-  var y=prevDay(t);
+  var t=todayRiyadh(), y=prevDay(t);
   saveHist([
     {id:'seed-'+t,date:t,rate:4,g:{price:5,costUSD:0.40,qty:9},d:{price:15,costUSD:0.50,qty:0}},
     {id:'seed-'+y,date:y,rate:4,g:{price:5,costUSD:0.40,qty:0},d:{price:15,costUSD:0.50,qty:2}}
@@ -614,7 +851,7 @@ function seed(){
   localStorage.setItem(SEED,'1');
 }
 
-/* ---------- صوت العتبات: WebAudio مولّد (effects E2) ---------- */
+/* ---------- صوت العتبات ---------- */
 var AC=null;
 function ensureAudio(){
   if(AC||reduced)return;
@@ -637,48 +874,52 @@ function playMilestone(){
   }catch(e){}
 }
 
-/* ---------- العدّاد الدوّار odometer (shape §6.1 + motion §3) ---------- */
-var odoEl=null, odoCount=0;
+/* ---------- العدّاد الدوّار odometer (بكرات ميكانيكية + فواصل آلاف) ---------- */
+var odoEl=null, odoLen=0;
 var shownPrf=0, heroRaf=null, heroAnim=null;
 function easeOutExpo(k){return k>=1?1:1-Math.pow(2,-10*k);}
-function buildOdo(n){
-  odoEl=$('odo');odoEl.innerHTML='';odoCount=n;
-  for(var i=0;i<n;i++){
-    var cell=document.createElement('span');cell.className='odo-digit';
-    var strip=document.createElement('span');strip.className='odo-strip';
-    for(var d=0;d<=9;d++){var s=document.createElement('span');s.textContent=d;strip.appendChild(s);}
-    var s0=document.createElement('span');s0.textContent='0';strip.appendChild(s0); /* لفة 9→0 */
-    cell.appendChild(strip);odoEl.appendChild(cell);
-    if(i===n-3){var dot=document.createElement('span');dot.className='odo-dot';dot.textContent='.';odoEl.appendChild(dot);}
+function buildOdo(str){
+  odoEl=$('odo');odoEl.innerHTML='';odoLen=str.length;
+  for(var i=0;i<str.length;i++){
+    var ch=str.charAt(i);
+    if(ch>='0'&&ch<='9'){
+      var cell=document.createElement('span');cell.className='odo-digit';
+      var strip=document.createElement('span');strip.className='odo-strip';
+      for(var d=0;d<=9;d++){var s=document.createElement('span');s.textContent=d;strip.appendChild(s);}
+      var s0=document.createElement('span');s0.textContent='0';strip.appendChild(s0);
+      cell.appendChild(strip);odoEl.appendChild(cell);
+    }else{
+      var sep=document.createElement('span');sep.className='odo-sep';sep.textContent=ch;odoEl.appendChild(sep);
+    }
   }
 }
 function renderOdo(v,snap){
-  /* v بالريال → سنتات. أثناء الحركة: تدحرج مستمر لكل خانة (ميكانيكي)؛
-     عند الاستقرار (snap): أرقام صحيحة نظيفة بلا انزلاق جزئي */
-  var fc=Math.max(0,v)*100;
-  var centsI=Math.round(fc);
-  var s=String(centsI);
-  var n=Math.max(3,s.length);
-  if(n!==odoCount)buildOdo(n);
-  var padded=s;
-  while(padded.length<n)padded='0'+padded;
+  var fc=Math.round(Math.max(0,v)*100);
+  var str=fmt2(fc/100);
+  if(str.length!==odoLen)buildOdo(str);
   var cells=odoEl.querySelectorAll('.odo-digit');
-  for(var i=0;i<n;i++){
+  var digits=str.replace(/[^0-9]/g,''), nd=digits.length, ci=0;
+  for(var i=0;i<str.length;i++){
+    var ch=str.charAt(i);
+    if(ch<'0'||ch>'9')continue;
     var d,frac;
-    if(snap){d=parseInt(padded.charAt(i),10);frac=0;}
-    else{
-      var pos=fc/Math.pow(10,n-1-i),fl=Math.floor(pos);
-      d=fl%10;frac=pos-fl;
-    }
-    cells[i].firstChild.style.transform='translateY('+(-(d+frac))+'em)';
+    if(snap){d=parseInt(ch,10);frac=0;}
+    else{var pos=fc/Math.pow(10,nd-1-ci),fl=Math.floor(pos);d=fl%10;frac=pos-fl;}
+    cells[ci].firstChild.style.transform='translateY('+(-(d+frac))+'em)';
+    ci++;
   }
 }
-function srUpdate(v){$('heroSr').textContent=money(v);}
+/* إعلان قارئ الشاشة بتهدئة 800ms (a11y F6) */
+var srT=null;
+function srUpdate(v){
+  clearTimeout(srT);
+  srT=setTimeout(function(){$('heroSr').textContent=money(v);},reduced?0:800);
+}
 function animateHeroTo(target,instant){
   target=Math.max(0,target);
-  if(reduced||instant){shownPrf=target;renderOdo(target,true);srUpdate(target);return;}
+  $('odoSlim').textContent=fmt(target);
+  if(reduced||instant){shownPrf=target;renderOdo(target,true);$('heroSr').textContent=money(target);return;}
   if(heroRaf){
-    /* دمج: حدّث الهدف من القيمة المعروضة اللحظية (motion §3.3) */
     heroAnim.to=target;heroAnim.from=shownPrf;heroAnim.t0=performance.now();
     heroAnim.dur=clamp(260,180+Math.abs(target-shownPrf)*6,650);
     return;
@@ -716,20 +957,148 @@ function paintStatic(c){
   $('d_priceTag').textContent=fmt(c.cfg.d_price)+' ر.س / اشتراك';
   $('t_rev').textContent=fmt(c.rev);
   $('t_cst').textContent=fmt(c.cst);
+  $('sbProfit').textContent=fmt(c.prf)+' ر.س';
+  /* حالة زر − عند الصفر (polish craft-floor) */
+  document.querySelectorAll('.stepper button[data-s="-1"]').forEach(function(b){
+    b.disabled=(b.getAttribute('data-t')==='g'?c.gq:c.dq)===0;
+  });
 }
 function recalc(){
   var c=current();
   paintStatic(c);
   animateHeroTo(c.prf);
   updateGlow(c.prf);
+  updateCharge(c.prf);
+  checkLiveRecord(c.prf);
+  checkWave(c.prf);
+  updateGoalBar();
+  updateSavebarDate();
   return c;
 }
 
-/* ---------- الرسم البياني (shape §6.5 + motion §5 + effects E4) ---------- */
-var chartState={bars:[],sel:null,raf:null,pulse:-1};
+/* ---------- الهدف الذاتي + شريط التقدم (F1 / G1+G2) ---------- */
+function weekRange(today){
+  var d=new Date(today+'T12:00:00');
+  var start=new Date(d.getTime()-(((d.getDay()+1)%7)*864e5));
+  var s0=start.toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'});
+  var e0=new Date(start.getTime()+6*864e5).toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'});
+  return {from:s0,to:e0,key:'w'+s0};
+}
+function monthRange(today){
+  var ym=today.slice(0,7);
+  return {from:ym+'-01',to:ym+'-31',key:'m'+ym};
+}
+function goalSum(g){
+  var h=loadHist(), r=g.period==='month'?monthRange(todayRiyadh()):weekRange(todayRiyadh());
+  var s=0;
+  h.forEach(function(e){if(e.date>=r.from&&e.date<=r.to)s+=totals(e).prf;});
+  return {sum:s,range:r};
+}
+function updateGoalBar(){
+  var g=loadGoal(), bar=$('goalBar');
+  if(!g){bar.classList.remove('show');return;}
+  bar.classList.add('show');
+  var gs=goalSum(g), pct=clamp(gs.sum/g.amount,0,1);
+  var fill=$('gbFill');
+  fill.style.width=(pct*100).toFixed(1)+'%';
+  fill.classList.toggle('gold',pct>=1);
+  var perName=g.period==='month'?'الشهر':'الأسبوع';
+  var txt;
+  if(pct>=1){
+    txt='<b>صكيت الهدف</b> — +'+fmt(gs.sum-g.amount)+' فوقه';
+    var hit=localStorage.getItem(GOALHIT);
+    if(hit!==gs.range.key+':'+g.amount){
+      localStorage.setItem(GOALHIT,gs.range.key+':'+g.amount);
+      if(!reduced){var gf=$('goldFlash');gf.classList.remove('go');void gf.offsetWidth;gf.classList.add('go');}
+    }
+  }else{
+    txt='باقي <b>'+fmt(g.amount-gs.sum)+' ر.س</b> وتصك هدف '+perName;
+    if(g.period==='month'){
+      var today=todayRiyadh();
+      var dim=new Date(today.slice(0,7)+'-01T12:00:00');
+      var daysIn=new Date(dim.getFullYear(),dim.getMonth()+1,0).getDate();
+      var left=daysIn-parseInt(today.slice(8,10),10)+1;
+      if(left>0)txt+='<span class="daily">المطلوب يوميًا: '+fmt((g.amount-gs.sum)/left)+' ر.س</span>';
+    }
+  }
+  $('gbTxt').innerHTML=txt;
+}
+function bindGoalSeg(){
+  document.querySelectorAll('[data-goalperiod]').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('[data-goalperiod]').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');
+      var g=loadGoal()||{amount:0,period:'week'};
+      g.period=b.getAttribute('data-goalperiod');
+      saveGoal(g.amount>0?g:null);
+      localStorage.removeItem(GOALHIT);
+      updateGoalBar();
+    });
+  });
+}
+
+/* ---------- شحن زر الختم (PM6) ---------- */
+function updateCharge(p){
+  var btn=$('stampBtn');
+  var q=clamp(p/100,0,1);
+  btn.style.boxShadow='0 4px 18px rgba(43,191,102,'+(0.35*q).toFixed(2)+')';
+  btn.classList.toggle('charged',p>=100);
+}
+
+/* ---------- الرقم القياسي أثناء الكتابة (PM2) ---------- */
+var recCrossed=false, recBuzzed=false;
+function checkLiveRecord(p){
+  if(reduced)return;
+  var h=loadHist(), max=0;
+  h.forEach(function(e){var v=totals(e).prf;if(v>max)max=v;});
+  if(h.length>=2&&p>max&&!recCrossed){
+    recCrossed=true;
+    var sw=$('goldSweep');sw.classList.remove('go');void sw.offsetWidth;sw.classList.add('go');
+    $('recStar').classList.add('show');
+    var chip=$('recChip');chip.classList.add('show');
+    setTimeout(function(){chip.classList.remove('show');},900);
+    if(!recBuzzed){recBuzzed=true;buzz([15,30,15]);}
+  }else if(p<=max&&recCrossed){
+    recCrossed=false;$('recStar').classList.remove('show');
+  }
+}
+
+/* ---------- موجة الرسم عند عبور عتبة (PM4) ---------- */
+var wavedSession={}, waveAnim=null;
+function checkWave(p){
+  if(reduced)return;
+  [25,50,100].forEach(function(t){
+    if(p>=t&&!wavedSession[t]){
+      wavedSession[t]=1;
+      startWave();
+    }
+  });
+}
+function startWave(){
+  if(waveAnim)return;
+  var t0=performance.now();
+  function loop(t){
+    var active=drawChart('final',{waveT0:t0,now:t});
+    if(active)waveAnim=requestAnimationFrame(loop);
+    else waveAnim=null;
+  }
+  waveAnim=requestAnimationFrame(loop);
+}
+function waveFactor(i,w){
+  if(!w)return 1;
+  var k=(w.now-w.waveT0-i*70)/220;
+  if(k<=0||k>=1)return 1;
+  return 1+0.14*Math.sin(k*Math.PI);
+}
+
+/* ---------- الرسم البياني — سبائك + مبدّل المدة (F2) ---------- */
+var chartState={bars:[],sel:null,raf:null};
+var chartRange='7';
 var CH=200;
 function chartData(){
-  var h=loadHist().sort(function(a,b){return a.date<b.date?-1:1;}).slice(-7);
+  var h=loadHist().sort(function(a,b){return a.date<b.date?-1:1;});
+  if(chartRange==='7')h=h.slice(-7);
+  else if(chartRange==='30')h=h.slice(-30);
   var max=1;
   h.forEach(function(e){var p=totals(e).prf;if(p>max)max=p;});
   var best=0;
@@ -740,73 +1109,88 @@ function layoutBars(cd,W){
   var n=cd.h.length,padB=30,padT=16,slot=W/n,bw=Math.min(34,slot*0.55);
   return cd.h.map(function(e,i){
     var p=totals(e).prf, bh=Math.max(4,(p/cd.max)*(CH-padB-padT));
-    var cx=W-(i*slot)-slot/2; /* RTL: الأقدم يمينًا */
+    var cx=W-(i*slot)-slot/2;
     return {e:e,i:i,cx:cx,bw:bw,h:bh,x:cx-bw/2,y:CH-padB-bh,best:i===cd.best,
       alpha:i===cd.best?1:0.35+0.55*(n<=1?1:i/(n-1))};
   });
 }
-function paintChart(cd,bars,W,sel,pulseT){
+function paintChart(cd,bars,W,sel,wave){
   var cv=$('weekChart'),dpr=Math.min(2,window.devicePixelRatio||1);
   if(cv.width!==Math.round(W*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(CH*dpr);}
   var x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,CH);
-  /* شبكة */
-  x.strokeStyle='rgba(148,163,184,.07)';x.lineWidth=1;
+  x.strokeStyle='rgba(244,241,230,.07)';x.lineWidth=1;
   for(var g=1;g<=3;g++){var gy=(CH-30)*g/4+8;x.beginPath();x.moveTo(0,gy);x.lineTo(W,gy);x.stroke();}
-  x.strokeStyle='rgba(148,163,184,.25)';x.beginPath();x.moveTo(0,CH-30);x.lineTo(W,CH-30);x.stroke();
-  var n=bars.length;
-  bars.forEach(function(b,bi){
-    var dim=(sel!==null&&sel!==bi);
+  x.strokeStyle='rgba(244,241,230,.22)';x.beginPath();x.moveTo(0,CH-30);x.lineTo(W,CH-30);x.stroke();
+  bars.forEach(function(b){
+    var dim=(sel!==null&&sel!==b.i);
+    var wf=waveFactor(b.i,wave);
+    var bh=b.h*wf, by=CH-30-bh;
     x.save();
     x.globalAlpha=dim?0.45:1;
-    var col=b.best?'#F5B81F':'#2BE36B';
-    x.fillStyle=col;
-    if(!b.best)x.globalAlpha=(dim?0.45:1)*b.alpha;
-    if(pulseT>=0&&b.best&&!reduced){x.shadowColor='rgba(245,184,31,.9)';x.shadowBlur=18*Math.sin(pulseT*Math.PI);}
-    x.beginPath();
-    if(x.roundRect)x.roundRect(b.x,b.y,b.bw,b.h,[6,6,0,0]);else x.rect(b.x,b.y,b.bw,b.h);
-    x.fill();x.restore();
-    /* قيمة فوق أفضل عمود فقط */
     if(b.best){
-      x.fillStyle='#F5B81F';x.font='600 11px "IBM Plex Mono",monospace';x.textAlign='center';
-      x.fillText(fmt(totals(b.e).prf),b.cx,Math.max(12,b.y-6));
+      var gr=x.createLinearGradient(0,by,0,by+bh);
+      gr.addColorStop(0,'#F0C75E');gr.addColorStop(1,'#D9A92E');
+      x.fillStyle=gr;
+    }else{
+      x.fillStyle='#2BBF66';
+      x.globalAlpha=(dim?0.45:1)*b.alpha;
     }
-    x.fillStyle='#8E9BB0';x.font='11px Cairo,sans-serif';x.textAlign='center';
+    x.beginPath();
+    if(x.roundRect)x.roundRect(b.x,by,b.bw,bh,[5,5,0,0]);else x.rect(b.x,by,b.bw,bh);
+    x.fill();
+    /* نقش السبائك: خطوط أفقية دقيقة (art-direction §6.4) */
+    x.globalAlpha=(dim?0.35:0.5)*(b.best?1:b.alpha);
+    x.strokeStyle=b.best?'rgba(7,16,9,.35)':'rgba(7,16,9,.4)';
+    x.lineWidth=1;
+    for(var l=1;l<=3;l++){
+      var ly=by+bh*l/4;
+      if(ly<by+bh-2){x.beginPath();x.moveTo(b.x+3,ly);x.lineTo(b.x+b.bw-3,ly);x.stroke();}
+    }
+    x.restore();
+    if(b.best){
+      x.fillStyle='#F0C75E';x.font='600 11px "IBM Plex Mono",monospace';x.textAlign='center';
+      x.fillText(fmt(totals(b.e).prf),b.cx,Math.max(12,by-6));
+    }
+    x.fillStyle='#9AA39B';x.font='11px Cairo,sans-serif';x.textAlign='center';
     x.fillText(fmtDate(b.e.date,'short'),b.cx,CH-10);
   });
-  chartState.bars=bars.map(function(b){return{cx:b.cx,x:b.x,y:b.y,w:b.bw,h:b.h,e:b.e};});
+  chartState.bars=bars.map(function(b){return{cx:b.cx,x:b.x,y:CH-30-b.h,w:b.bw,h:b.h,e:b.e,i:b.i};});
   var sum=cd.h.reduce(function(a,e){return a+totals(e).prf;},0);
   $('w_total').textContent=money(sum);
-  if(cd.h.length){var bb=cd.h[cd.best];$('w_best').textContent=fmtDate(bb.date,'short')+' · '+money(totals(bb).prf);}
-  else{$('w_best').textContent='—';}
+  $('wsTotalK').textContent=chartRange==='7'?'حصيلة 7 أيام':chartRange==='30'?'حصيلة 30 يومًا':'حصيلة كل الأيام';
+  if(cd.h.length){
+    var bb=cd.h[cd.best];
+    $('w_best').textContent=fmtDate(bb.date,'short')+' | '+money(totals(bb).prf);
+    cv.setAttribute('aria-label','رسم أعمدة لأرباح '+(chartRange==='all'?'كل الأيام':'آخر '+chartRange+' أيام')+' — أفضل يوم '+fmtDate(bb.date,'short')+' بربح '+money(totals(bb).prf));
+  }else{$('w_best').textContent='—';}
 }
-function drawChart(mode){
+function drawChart(mode,opt){
+  opt=opt||{};
   var cv=$('weekChart');if(!cv)return;
   var W=cv.clientWidth||cv.parentNode.clientWidth||300;
   var cd=chartData();
-  if(mode==='stats'){ /* إحصائيات فقط بلا رسم — تُستخدم عند التحميل قبل الـintro */
-    if(!cd.h.length){$('w_total').textContent=money(0);$('w_best').textContent='—';return;}
-    var sum=cd.h.reduce(function(a,e){return a+totals(e).prf;},0);
-    $('w_total').textContent=money(sum);
-    var bb=cd.h[cd.best];
-    $('w_best').textContent=fmtDate(bb.date,'short')+' · '+money(totals(bb).prf);
-    return;
-  }
   if(!cd.h.length){
     var dpr=Math.min(2,window.devicePixelRatio||1);
     cv.width=Math.round(W*dpr);cv.height=Math.round(CH*dpr);
     var x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,CH);
-    x.fillStyle='#8E9BB0';x.font='13px Cairo,sans-serif';x.textAlign='center';
-    x.fillText('احفظ أول يوم وبتشوف أعمدتك هنا',W/2,CH/2);
+    x.fillStyle='#9AA39B';x.font='13px Cairo,sans-serif';x.textAlign='center';
+    x.fillText('احفظ أول يوم وشوف أعمدتك تكبر',W/2,CH/2);
     $('w_total').textContent=money(0);$('w_best').textContent='—';
-    chartState.bars=[];return;
+    chartState.bars=[];return false;
   }
   var targets=layoutBars(cd,W);
   if(mode==='final'||reduced){
     if(chartState.raf)cancelAnimationFrame(chartState.raf);
     chartState.cur=targets.map(function(b){return{cx:b.cx,h:b.h};});
-    paintChart(cd,targets,W,chartState.sel,-1);return;
+    chartState.prevData=targets.map(function(b){return{date:b.e.date};});
+    paintChart(cd,targets,W,chartState.sel,opt.waveT0?{waveT0:opt.waveT0,now:opt.now}:null);
+    if(opt.waveT0){
+      var active=false;
+      targets.forEach(function(b,i){var k=(opt.now-opt.waveT0-i*70)/220;if(k>0&&k<1)active=true;});
+      return active;
+    }
+    return false;
   }
-  /* من الحالة الحالية (تتيح انزلاق الأعمدة عند الحذف — motion §5.2) */
   var prev=chartState.cur||[];
   var prevByDate={};
   (chartState.prevData||[]).forEach(function(pb,i){prevByDate[pb.date]=prev[i];});
@@ -827,31 +1211,14 @@ function drawChart(mode){
       return{cx:f.cx+(b.cx-f.cx)*k,h:f.h+(b.h-f.h)*k};
     });
     chartState.cur=cur;
-    var pb=targets.map(function(b,i){return{cx:cur[i].cx,x:cur[i].cx-b.bw/2,y:CH-30-cur[i].h,bw:b.bw,h:cur[i].h,e:b.e,best:b.best,alpha:b.alpha};});
-    var pulseT=-1;
-    if(mode==='intro'&&done&&!reduced){pulseT=0;}
-    paintChart(cd,pb,W,chartState.sel,pulseT);
+    var pb=targets.map(function(b,i){return{cx:cur[i].cx,x:cur[i].cx-b.bw/2,y:CH-30-cur[i].h,bw:b.bw,h:cur[i].h,e:b.e,i:b.i,best:b.best,alpha:b.alpha};});
+    paintChart(cd,pb,W,chartState.sel,null);
     if(!done){chartState.raf=requestAnimationFrame(step);}
-    else{
-      chartState.raf=null;
-      if(mode==='intro'&&!reduced)pulseBest(cd,W);
-    }
+    else chartState.raf=null;
   }
   chartState.raf=requestAnimationFrame(step);
+  return false;
 }
-/* نبضة توهج واحدة للعمود الذهبي بعد الدخول (motion §5.1) */
-function pulseBest(cd,W){
-  var t0=performance.now(),dur=500;
-  function step(t){
-    var k=(t-t0)/dur;
-    if(k>=1){drawChart('final');return;}
-    var targets=layoutBars(cd,W);
-    paintChart(cd,targets,W,chartState.sel,Math.sin(k*Math.PI));
-    requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-/* تلميح الرسم (effects E4) */
 var tipT=null;
 function showTip(i){
   var b=chartState.bars[i];if(!b)return;
@@ -862,11 +1229,12 @@ function showTip(i){
   if(e.d.qty>0)bits.push('دولينجو ×'+e.d.qty);
   tip.innerHTML='<div class="tt-day">'+fmtDate(e.date)+'</div>'
     +'<div class="tt-p">ربح '+money(t.prf)+'</div>'
-    +'<div class="tt-s">'+bits.join(' · ')+'</div>';
+    +'<div class="tt-s">'+bits.join(' | ')+'</div>';
   var wrap=$('chartPanel'),W=wrap.clientWidth;
   tip.style.left=clamp(b.cx-75,8,Math.max(8,W-158))+'px';
   tip.style.top=Math.max(4,b.y-86)+'px';
   tip.classList.add('show');
+  $('chartLive').textContent=fmtDate(e.date)+' — ربح '+money(t.prf)+(bits.length?' — '+bits.join('، '):'');
   buzz(8);
   clearTimeout(tipT);tipT=setTimeout(hideTip,3000);
 }
@@ -881,8 +1249,26 @@ $('weekChart').addEventListener('click',function(ev){
   chartState.bars.forEach(function(b,i){if(px>=b.x-6&&px<=b.x+b.w+6)hit=i;});
   if(hit>=0){showTip(hit);}else{hideTip();}
 });
+$('weekChart').addEventListener('keydown',function(ev){
+  var n=chartState.bars.length;if(!n)return;
+  var cur=chartState.sel===null?-1:chartState.sel, next=null;
+  if(ev.key==='ArrowRight')next=Math.min(n-1,cur+1);
+  else if(ev.key==='ArrowLeft')next=Math.max(0,cur-1);
+  else if(ev.key==='Escape'){hideTip();return;}
+  else return;
+  ev.preventDefault();
+  if(next!==null)showTip(next);
+});
+document.querySelectorAll('[data-range]').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('[data-range]').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on');
+    chartRange=b.getAttribute('data-range');
+    hideTip();drawChart('calm');
+  });
+});
 
-/* ---------- السجل ---------- */
+/* ---------- دفتر الأرباح (الأحدث أولًا — BUG-1) ---------- */
 var grandShown=0;
 function countGrand(to){
   var el=$('grandVal'),from=grandShown;
@@ -896,10 +1282,13 @@ function countGrand(to){
   requestAnimationFrame(step);
 }
 function renderHistory(enterId){
-  var h=loadHist().sort(function(a,b){return a.date<b.date?-1:1;});
+  var asc=loadHist().sort(function(a,b){return a.date<b.date?-1:1;});
+  var serial={};
+  asc.forEach(function(e,i){serial[e.id]=i+1;});
+  var h=asc.slice().reverse();
   var box=$('history'),gt=0;
   if(!h.length){
-    box.innerHTML='<div class="hist-empty">لسا ما حفظت أي يوم<br>احسب مبيعات اليوم فوق واضغط «احفظ نتيجة اليوم»</div>';
+    box.innerHTML='<div class="hist-empty">دفترك فاضي للحين.<br>زِد العدّاد فوق وسجّل أول ربح</div>';
     var ht=$('grandTotal');ht.classList.remove('on');
     setTimeout(function(){if(!$('grandTotal').classList.contains('on'))$('grandTotal').style.display='none';},200);
     grandShown=0;return;
@@ -910,11 +1299,12 @@ function renderHistory(enterId){
     var bits=[];
     if(e.g.qty>0)bits.push('جيميناي ×'+e.g.qty);
     if(e.d.qty>0)bits.push('دولينجو ×'+e.d.qty);
-    html+='<div class="hrow'+(e.id===enterId?' enter':'')+'"><div class="hd"><div class="date">'+fmtDate(e.date)+'</div>'
-      +'<div class="sub">'+bits.join(' · ')+'<br>بيع '+money(t.rev)+' · تكلفة '+money(t.cst)+'</div></div>'
-      +'<div class="hp">'+money(t.prf)+'<small>صافي الربح</small></div>'
-      +'<button type="button" class="del" data-id="'+e.id+'" aria-label="حذف اليوم">'
-      +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>'
+    var vno=(serial[e.id]||0).toLocaleString('ar-EG');
+    html+='<div class="hrow'+(e.id===enterId?' enter':'')+'"><div class="hd"><div class="vno">قسيمة '+vno+'</div><div class="date">'+fmtDate(e.date)+'</div>'
+      +'<div class="sub">'+bits.join(' | ')+'<br>بيع '+money(t.rev)+' | كلفة '+money(t.cst)+'</div></div>'
+      +'<div class="hp">'+money(t.prf)+'<small>الربح</small></div>'
+      +'<button type="button" class="del" data-id="'+e.id+'" aria-label="حذف يوم '+fmtDate(e.date)+'">'
+      +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>'
       +'</button></div>';
   });
   box.innerHTML=html;
@@ -923,22 +1313,25 @@ function renderHistory(enterId){
   countGrand(gt);
   box.querySelectorAll('.del').forEach(function(b){
     b.addEventListener('click',function(){
-      if(!confirm('تحذف نتيجة هذا اليوم؟'))return;
-      var row=b.closest('.hrow');
-      function doDelete(){
-        saveHist(loadHist().filter(function(e){return e.id!==b.getAttribute('data-id');}));
-        renderHistory();drawChart('calm');updateStreak(false);toast('انحذف اليوم من السجل');
-      }
-      if(reduced){doDelete();return;}
-      row.style.height=row.offsetHeight+'px';
-      void row.offsetWidth;
-      row.classList.add('leaving');
-      setTimeout(doDelete,260);
+      confirmModal('حذف اليوم','متأكد تبي تحذف هاليوم؟','احذف',function(){
+        var row=b.closest('.hrow');
+        function doDelete(){
+          saveHist(loadHist().filter(function(e){return e.id!==b.getAttribute('data-id');}));
+          renderHistory();drawChart('calm');updateStreak(false);updateGoalBar();
+          toast('انحذف اليوم');
+          var h2=$('histTitle');if(h2)h2.focus();
+        }
+        if(reduced){doDelete();return;}
+        row.style.height=row.offsetHeight+'px';
+        void row.offsetWidth;
+        row.classList.add('leaving');
+        setTimeout(doDelete,260);
+      });
     });
   });
 }
 
-/* ---------- السلسلة (effects E6b) ---------- */
+/* ---------- السلسلة (E6b) ---------- */
 function computeStreak(){
   var h=loadHist().sort(function(a,b){return a.date<b.date?-1:1;});
   if(!h.length)return 0;
@@ -954,34 +1347,50 @@ function computeStreak(){
 function updateStreak(popIt){
   var n=computeStreak(),badge=$('streakBadge');
   if(n>=2){
-    $('streakTxt').textContent=n+' أيام متتالية من الربح';
+    $('streakTxt').textContent=n+' أيام ربح ورا بعض';
     badge.classList.add('show');
     if(popIt&&!reduced){badge.classList.remove('pop');void badge.offsetWidth;badge.classList.add('pop');}
   }else{badge.classList.remove('show');}
 }
 
-/* ---------- الاحتفال (effects E1/E2/E6a/E6c + motion §4.2) ---------- */
+/* ---------- التأكيد داخل التطبيق ---------- */
+var cmCb=null, cmLastFocus=null;
+function confirmModal(title,msg,okLabel,cb){
+  cmCb=cb;cmLastFocus=document.activeElement;
+  $('cmTitle').textContent=title;
+  $('cmMsg').textContent=msg;
+  $('cmOk').textContent=okLabel;
+  $('cmodal').classList.add('show');
+  $('cmOk').focus();
+}
+function hideConfirm(){$('cmodal').classList.remove('show');cmCb=null;if(cmLastFocus&&cmLastFocus.focus)cmLastFocus.focus();}
+$('cmOk').addEventListener('click',function(){var cb=cmCb;hideConfirm();if(cb)cb();});
+$('cmCancel').addEventListener('click',hideConfirm);
+$('cmodal').addEventListener('click',function(ev){if(ev.target===$('cmodal'))hideConfirm();});
+
+/* ---------- الاحتفال — ضربة الختم (art-direction §4) ---------- */
 var MILESTONES=[{t:25,n:'يوم موفق',cls:'m25'},{t:50,n:'يوم ذهبي',cls:'m50'},{t:100,n:'يوم أسطوري',cls:'m100'}];
-var STAR='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>';
-var CROWN='<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 7l4 4 5-6 5 6 4-4-1.5 10h-15z"/></svg>';
+var STAR='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>';
+var CROWN='<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 7l4 4 5-6 5 6 4-4-1.5 10h-15z"/></svg>';
+var STREAK_MILES={3:'بداية موفقة',7:'أسبوع كامل',14:'أسبوعين وحش',30:'شهر أسطوري'};
 function partyBurst(){
   if(reduced)return;
-  var hero=$('odo').getBoundingClientRect();
-  var cx=hero.left+hero.width/2, cy=hero.top+hero.height/2;
-  var cv=document.createElement('canvas');cv.id='partyCanvas';
+  var card=$('popCard').getBoundingClientRect();
+  var cx=card.left+card.width/2, cy=card.top+card.height/2;
+  var cv=document.createElement('canvas');cv.id='partyCanvas';cv.setAttribute('aria-hidden','true');
   var dpr=Math.min(2,window.devicePixelRatio||1);
   cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;
   cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';
   document.body.appendChild(cv);
   var x=cv.getContext('2d');x.scale(dpr,dpr);
-  var cols=['#2BE36B','#F5B81F','rgba(245,248,253,.85)'];
+  var cols=['#D9A92E','#2BBF66','rgba(244,241,230,.9)'];
   var ps=[];
-  for(var i=0;i<14;i++){
-    var a=Math.random()*Math.PI*2, sp=120+Math.random()*260;
-    ps.push({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-160,r:2+Math.random()*2.5,
-      c:cols[i%3],life:0,max:0.9});
+  for(var i=0;i<10;i++){
+    var a=Math.random()*Math.PI*2, sp=90+Math.random()*200;
+    ps.push({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-140,r:1.5+Math.random()*2,
+      c:cols[i%3],life:0,max:0.8});
   }
-  var t0=performance.now(),G=900;
+  var t0=performance.now(),G=800;
   function step(t){
     var dt=Math.min(0.05,(t-(step._l||t0))/1000);step._l=t;
     var el=(t-t0)/1000;
@@ -1004,7 +1413,7 @@ function partyBurst(){
 function flyNumber(amount){
   if(reduced)return;
   var from=$('odo').getBoundingClientRect(), to=$('historyPanel').getBoundingClientRect();
-  var el=document.createElement('div');el.className='fly-num';
+  var el=document.createElement('div');el.className='fly-num';el.setAttribute('aria-hidden','true');
   el.textContent='+'+money(amount);
   el.style.left=(from.left+from.width/2)+'px';
   el.style.top=(from.top+from.height/2)+'px';
@@ -1034,63 +1443,64 @@ var ovT=null;
 function celebrate(amount,opts){
   opts=opts||{};
   var ov=$('overlay'),pop=$('popCard');
-  /* شارات */
-  var rec=$('popRecord'),bdg=$('popBadge'),fst=$('popFirst');
-  rec.className='';bdg.className='';pop.classList.remove('gold-glow');
-  if(opts.record){rec.id='popRecord';rec.innerHTML=CROWN+'<span>رقم قياسي جديد!</span>';rec.classList.add('show');}
+  var rec=$('popRecord'),bdg=$('popBadge'),stm=$('popStreak');
+  rec.className='';bdg.className='';stm.className='';pop.classList.remove('gold-stamp');
+  if(opts.record){rec.innerHTML=CROWN+'<span>رقم قياسي جديد</span>';rec.classList.add('show');}
   if(opts.mile){
-    bdg.id='popBadge';
     bdg.innerHTML=(opts.mile.t===100?CROWN:STAR)+'<span>'+opts.mile.n+'</span>';
     bdg.classList.add(opts.mile.cls);bdg.classList.add('show');
     if(opts.mile.t===100){
-      pop.classList.add('gold-glow');
+      pop.classList.add('gold-stamp');
       var gf=$('goldFlash');gf.classList.remove('go');void gf.offsetWidth;gf.classList.add('go');
       playMilestone();
     }
   }
-  if(opts.first){fst.classList.add('show');}else{fst.classList.remove('show');}
+  if(opts.streakMile){
+    stm.innerHTML=STAR+'<span>'+opts.streakMile+' — '+computeStreak()+' أيام ربح ورا بعض</span>';
+    stm.classList.add('show');
+  }
   countUp($('popAmt'),amount,800,'+');
   ov.classList.remove('leaving');
   void ov.offsetWidth;
   ov.classList.add('show');
+  if(!reduced){document.body.classList.add('jolt');setTimeout(function(){document.body.classList.remove('jolt');},200);}
   partyBurst();
   buzz([20,40,20]);
   clearTimeout(ovT);
-  ovT=setTimeout(hideCeleb,reduced?1200:1600);
+  ovT=setTimeout(hideCeleb,reduced?1200:1400);
 }
 function hideCeleb(){
   var ov=$('overlay');
-  if(reduced){ov.classList.remove('show');return;}
-  ov.classList.add('leaving');
-  setTimeout(function(){ov.classList.remove('show');ov.classList.remove('leaving');},260);
+  ov.classList.remove('show');
 }
 $('overlay').addEventListener('click',function(){clearTimeout(ovT);hideCeleb();});
+document.addEventListener('keydown',function(ev){
+  if(ev.key==='Escape'){
+    if($('cmodal').classList.contains('show'))hideConfirm();
+    else if($('overlay').classList.contains('show')){clearTimeout(ovT);hideCeleb();}
+  }
+});
 
-/* ---------- الخلفية الحية: توهج يتنفس + غبار (effects E3) ---------- */
-var amb={raf:null,parts:[],glow:0.07,glowT:0.07,profit:0};
+/* ---------- الغبار الذهبي — يتجمد بعد 20s خمول (polish 1.2) ---------- */
+var amb={raf:null,parts:[],profit:0,last:0,cv:null,x:null,dpr:1};
 function ambInit(){
-  var cv=$('dust'),dpr=Math.min(2,window.devicePixelRatio||1);
-  function size(){cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';}
+  var cv=$('dust');amb.dpr=Math.min(2,window.devicePixelRatio||1);
+  function size(){cv.width=innerWidth*amb.dpr;cv.height=innerHeight*amb.dpr;cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';}
   size();window.addEventListener('resize',size);
+  amb.parts=[];
   for(var i=0;i<12;i++)amb.parts.push({
     x:Math.random()*innerWidth,y:Math.random()*innerHeight,
-    r:2+Math.random()*1.5,vy:6+Math.random()*10,
-    a:0.12+Math.random()*0.06,c:Math.random()<0.7?'43,227,107':'245,184,31'
+    r:1.5+Math.random()*1.5,vy:5+Math.random()*9,
+    a:0.10+Math.random()*0.06,c:Math.random()<0.6?'217,169,46':'43,191,102'
   });
-  amb.cv=cv;amb.dpr=dpr;amb.x=cv.getContext('2d');
+  amb.cv=cv;amb.x=cv.getContext('2d');
 }
 function ambLoop(t){
-  if(document.hidden){amb.raf=requestAnimationFrame(ambLoop);return;}
-  var el=amb.x,dt=1/60;
-  /* تنفس التوهج: 5s + شدة حسب الربح */
-  var target=0.05+0.05*Math.abs(Math.sin(t/5000*Math.PI*2))+(amb.profit>0?Math.min(1,amb.profit/100)*0.06:0);
-  amb.glow+=(target-amb.glow)*0.05;
-  $('glowbreath').style.opacity=amb.glow.toFixed(3);
-  /* الغبار */
-  var dpr=amb.dpr;
+  if(document.hidden||performance.now()-amb.last>20000){amb.raf=null;return;}
+  var el=amb.x,dpr=amb.dpr;
   el.setTransform(dpr,0,0,dpr,0,0);el.clearRect(0,0,innerWidth,innerHeight);
   amb.parts.forEach(function(p){
-    p.y-=p.vy*dt;
+    p.y-=p.vy/60;
     if(p.y<-10){p.y=innerHeight+10;p.x=Math.random()*innerWidth;}
     el.fillStyle='rgba('+p.c+','+p.a+')';
     el.beginPath();el.arc(p.x,p.y,p.r,0,7);el.fill();
@@ -1100,113 +1510,269 @@ function ambLoop(t){
 function updateGlow(p){amb.profit=p;}
 function ambStart(){
   if(reduced||amb.raf)return;
+  amb.last=performance.now();
   ambInit();amb.raf=requestAnimationFrame(ambLoop);
   document.addEventListener('visibilitychange',function(){
-    if(!document.hidden&&!amb.raf&&!reduced)amb.raf=requestAnimationFrame(ambLoop);
+    if(!document.hidden)lastInteract();
   });
 }
 
-/* ---------- الأحداث ---------- */
+/* ---------- جنون العدّاد (PM1) ---------- */
+var tapTimes=[];
+function frenzyTick(stepper,delta){
+  if(reduced)return;
+  var now=performance.now();
+  tapTimes.push(now);
+  tapTimes=tapTimes.filter(function(t){return now-t<1200;});
+  var hero=$('heroPanel');
+  hero.classList.remove('turbo');void hero.offsetWidth;hero.classList.add('turbo');
+  if(tapTimes.length>=5){
+    if(!stepper._pool){
+      stepper._pool=[];
+      for(var i=0;i<6;i++){var c=document.createElement('span');c.className='fchip';stepper.appendChild(c);stepper._pool.push(c);}
+      stepper._pi=0;
+      var tag=document.createElement('span');tag.className='frenzy-tag';tag.textContent='إيقاع ناري';stepper.appendChild(tag);stepper._tag=tag;
+    }
+    var chip=stepper._pool[stepper._pi++%6];
+    chip.textContent=delta>0?'+1':'−1';
+    chip.style.color=delta>0?'var(--mint-green)':'var(--seal-red)';
+    chip.classList.remove('fly');void chip.offsetWidth;chip.classList.add('fly');
+  }
+  if(tapTimes.length===10&&stepper._tag){
+    stepper._tag.classList.add('show');
+    setTimeout(function(){if(stepper._tag)stepper._tag.classList.remove('show');},1200);
+    tapTimes=[];
+  }
+}
+
+/* ---------- الضغط المطوّل الشره (PM9) ---------- */
+function doStep(btn,s){
+  var id=btn.getAttribute('data-t')+'_qty';
+  var v=Math.floor(num(id))+s;
+  $(id).value=Math.max(0,v);
+  var inp=$(id);inp.classList.remove('tick');void inp.offsetWidth;inp.classList.add('tick');
+  recalc();
+}
 document.querySelectorAll('.stepper button').forEach(function(b){
+  var s=parseInt(b.getAttribute('data-s'),10);
   b.addEventListener('click',function(){
-    var id=b.getAttribute('data-t')+'_qty';
-    var v=Math.floor(num(id))+parseInt(b.getAttribute('data-s'),10);
-    $(id).value=Math.max(0,v);
-    var inp=$(id);inp.classList.remove('tick');void inp.offsetWidth;inp.classList.add('tick');
-    recalc();
+    if(b._lp){b._lp=false;return;}
+    doStep(b,s);
+    frenzyTick(b.closest('.stepper'),s);
   });
+  if(s===1){
+    var t1=null,iv=null,steps=0,lpActive=false;
+    function stop(){clearTimeout(t1);clearTimeout(iv);t1=iv=null;lpActive=false;}
+    b.addEventListener('pointerdown',function(){
+      stop();steps=0;lpActive=false;
+      t1=setTimeout(function(){
+        lpActive=true;
+        var delay=300;
+        function tick(){
+          doStep(b,1);steps++;
+          if(steps%5===0)buzz(6);
+          delay=Math.max(80,delay*0.82);
+          iv=setTimeout(tick,delay);
+          if(steps>120)stop();
+        }
+        tick();
+      },400);
+    });
+    ['pointerup','pointerleave','pointercancel'].forEach(function(ev){
+      b.addEventListener(ev,function(){if(lpActive)b._lp=true;stop();});
+    });
+    b.addEventListener('contextmenu',function(ev){ev.preventDefault();});
+  }
 });
 ['g_qty','d_qty'].forEach(function(id){$(id).addEventListener('input',recalc);});
+
+/* ---------- الإعدادات ---------- */
 function cfgChanged(){
   saveCfg({rate:num('rate'),g_price:num('g_price'),g_cost:num('g_cost'),d_price:num('d_price'),d_cost:num('d_cost')});
   recalc();
 }
 ['rate','g_price','g_cost','d_price','d_cost'].forEach(function(id){$(id).addEventListener('input',cfgChanged);});
-
-$('saveBtn').addEventListener('click',function(){
-  var c=current(), date=$('day').value||todayRiyadh();
-  if(c.gq===0&&c.dq===0){
-    /* خطأ: اهتزاز بصري + toast فقط — بلا اهتزاز لمسي (قرار الدمج #2) */
-    var btn=$('saveBtn');
-    btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake');
-    toast('زِد العدّاد أول — ما بعت شي للحين');
-    return;
-  }
-  var h=loadHist().filter(function(e){return e.date!==date;});
-  /* عتبات الإنجاز (أول كسر فقط) + الرقم القياسي */
-  var brk=brokenMiles(),newMiles=MILESTONES.filter(function(m){return c.prf>=m.t&&brk.indexOf(m.t)<0;});
-  var mile=newMiles.length?newMiles[newMiles.length-1]:null;
-  if(newMiles.length)localStorage.setItem(MILES,JSON.stringify(brk.concat(newMiles.map(function(m){return m.t;}))));
-  var maxHist=0;h.forEach(function(e){var p=totals(e).prf;if(p>maxHist)maxHist=p;});
-  var record=c.prf>maxHist&&h.length>=2;
-  var first=!localStorage.getItem(FIRST);
-  if(first)localStorage.setItem(FIRST,'1');
-  var entry={id:'e'+Date.now(),date:date,rate:c.cfg.rate,
-    g:{price:c.cfg.g_price,costUSD:c.cfg.g_cost,qty:c.gq},
-    d:{price:c.cfg.d_price,costUSD:c.cfg.d_cost,qty:c.dq}};
-  h.push(entry);saveHist(h);
-  celebrate(c.prf,{mile:mile,record:record,first:first});
-  setTimeout(function(){flyNumber(c.prf);},reduced?0:120);
-  $('g_qty').value=0;$('d_qty').value=0;
-  recalc(); /* العد التنازلي إلى 0 (E6d) */
-  var delay=reduced?0:620; /* تزامن دخول الصف مع هبوط الرقم (motion §4.3) */
-  setTimeout(function(){
-    renderHistory(entry.id);
-    drawChart('calm');
-    updateStreak(true);
-  },delay);
+$('goalAmt').addEventListener('input',function(){
+  var g={amount:num('goalAmt'),period:(document.querySelector('[data-goalperiod].on')||{}).getAttribute?document.querySelector('[data-goalperiod].on').getAttribute('data-goalperiod'):'week'};
+  saveGoal(g.amount>0?g:null);
+  localStorage.removeItem(GOALHIT);
+  updateGoalBar();
 });
 
-$('copyBtn').addEventListener('click',function(){
+/* ---------- نفس مبيعات أمس ---------- */
+$('ydayBtn').addEventListener('click',function(){
+  var h=loadHist().sort(function(a,b){return a.date<b.date?-1:1;});
+  if(!h.length){toast('دفترك فاضي للحين. زِد العدّاد فوق وسجّل أول ربح');return;}
+  var e=h[h.length-1];
+  $('g_qty').value=e.g.qty;$('d_qty').value=e.d.qty;
+  recalc();
+  toast('عبّيت لك مبيعات '+fmtDate(e.date,'short'));
+});
+
+/* ---------- الحفظ ---------- */
+var lastSaved=null;
+function updateSavebarDate(){
+  var date=$('day').value||todayRiyadh();
+  $('sbDate').textContent='سيُحفظ في: '+(date===todayRiyadh()?'اليوم':fmtDate(date,'short'));
+}
+function doSave(){
   var c=current(), date=$('day').value||todayRiyadh();
-  var L=['ملخص مبيعات '+fmtDate(date)];
-  if(c.gq>0)L.push('جيميناي برو: '+c.gq+' × '+fmt(c.cfg.g_price)+' = '+money(c.g.rev)+' (تكلفة '+money(c.g.cst)+' ← ربح '+money(c.g.prf)+')');
-  if(c.dq>0)L.push('دولينجو سوبر: '+c.dq+' × '+fmt(c.cfg.d_price)+' = '+money(c.d.rev)+' (تكلفة '+money(c.d.cst)+' ← ربح '+money(c.d.prf)+')');
-  L.push('صافي ربح اليوم: '+money(c.prf));
-  var txt=L.join('\n');
+  if(c.gq===0&&c.dq===0){
+    var btn=$('stampBtn');
+    btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake');
+    toast('ما بعت شي للحين. زِد العدّاد أول');
+    return;
+  }
+  var existing=loadHist().filter(function(e){return e.date===date;})[0];
+  function proceed(){
+    var h=loadHist().filter(function(e){return e.date!==date;});
+    var brk=brokenMiles(),newMiles=MILESTONES.filter(function(m){return c.prf>=m.t&&brk.indexOf(m.t)<0;});
+    var mile=newMiles.length?newMiles[newMiles.length-1]:null;
+    if(newMiles.length)localStorage.setItem(MILES,JSON.stringify(brk.concat(newMiles.map(function(m){return m.t;}))));
+    var maxHist=0;h.forEach(function(e){var p=totals(e).prf;if(p>maxHist)maxHist=p;});
+    var record=c.prf>maxHist&&h.length>=2;
+    var entry={id:'e'+Date.now(),date:date,rate:c.cfg.rate,
+      g:{price:c.cfg.g_price,costUSD:c.cfg.g_cost,qty:c.gq},
+      d:{price:c.cfg.d_price,costUSD:c.cfg.d_cost,qty:c.dq}};
+    h.push(entry);saveHist(h);
+    lastSaved=entry;
+    var streakAfter=computeStreak();
+    var streakMile=STREAK_MILES[streakAfter]?STREAK_MILES[streakAfter]:null;
+    celebrate(c.prf,{mile:mile,record:record,streakMile:streakMile});
+    setTimeout(function(){flyNumber(c.prf);},reduced?0:120);
+    var gq=c.gq,dq=c.dq;
+    $('g_qty').value=0;$('d_qty').value=0;
+    recalc();
+    var delay=reduced?0:620;
+    setTimeout(function(){
+      renderHistory(entry.id);
+      drawChart('calm');
+      updateStreak(true);
+      updateGoalBar();
+    },delay);
+    setTimeout(function(){
+      toastUndo('انحفظ اليوم',function(){
+        saveHist(loadHist().filter(function(e){return e.id!==entry.id;}));
+        $('g_qty').value=gq;$('d_qty').value=dq;
+        recalc();renderHistory();drawChart('calm');updateStreak(false);updateGoalBar();
+        toast('رجّعنا لك العدّادات');
+      });
+    },reduced?1300:1600);
+  }
+  if(existing){
+    confirmModal('يوم محفوظ','هذا اليوم محفوظ (ربح '+money(totals(existing).prf)+') — تبي تستبدله؟','استبدال',proceed);
+  }else proceed();
+}
+$('stampBtn').addEventListener('click',doSave);
+
+/* ---------- نسخ الملخص (من البيانات المحفوظة — إصلاح usability #1) ---------- */
+function summaryText(e,date){
+  var t=totals(e);
+  var L=['حصاد اليوم — '+fmtDate(date)];
+  if(e.g.qty>0)L.push('جيميناي: '+e.g.qty+' × '+fmt(e.g.price)+' = '+fmt(e.g.price*e.g.qty)+' (كلفة '+fmt(e.g.costUSD*e.rate*e.g.qty)+' ← ربح '+fmt(e.g.price*e.g.qty-e.g.costUSD*e.rate*e.g.qty)+')');
+  if(e.d.qty>0)L.push('دولينجو: '+e.d.qty+' × '+fmt(e.d.price)+' = '+fmt(e.d.price*e.d.qty)+' (كلفة '+fmt(e.d.costUSD*e.rate*e.d.qty)+' ← ربح '+fmt(e.d.price*e.d.qty-e.d.costUSD*e.rate*e.d.qty)+')');
+  L.push('الصافي: '+money(t.prf));
+  return L.join('\n');
+}
+$('copyBtn').addEventListener('click',function(){
+  var c=current(), date=$('day').value||todayRiyadh(), txt=null;
+  if(c.gq>0||c.dq>0){
+    txt=summaryText({g:{price:c.cfg.g_price,costUSD:c.cfg.g_cost,qty:c.gq},d:{price:c.cfg.d_price,costUSD:c.cfg.d_cost,qty:c.dq},rate:c.cfg.rate},date);
+  }else{
+    var h=loadHist();
+    var e=h.filter(function(x){return x.date===date;})[0]||(lastSaved&&lastSaved.date===date?lastSaved:null);
+    if(e)txt=summaryText(e,date);
+  }
+  if(!txt){toast('ما بعت شي للحين. زِد العدّاد أول');return;}
   function done(){
-    toast('انسخ الملخص — الصقه وين ما تبي');
+    toast('انسخ. الصقه وين ما تبي');
     buzz(10);
-    var btn=$('copyBtn');
     $('copyIco').style.display='none';$('copyOk').style.display='';
-    $('copyLbl').textContent='تم النسخ';btn.classList.add('ok');
+    $('copyBtn').classList.add('ok');
     setTimeout(function(){
       $('copyIco').style.display='';$('copyOk').style.display='none';
-      $('copyLbl').textContent='انسخ الملخص';btn.classList.remove('ok');
+      $('copyBtn').classList.remove('ok');
     },1800);
   }
-  function fb(){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){toast('تعذّر النسخ التلقائي');}document.body.removeChild(ta);}
+  function fb(){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){toast('ما انسخ تلقائيًا. انسخه يدويًا');}document.body.removeChild(ta);}
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(done,fb);else fb();
 });
 
+$('day').addEventListener('change',updateSavebarDate);
 var rT=null;
 window.addEventListener('resize',function(){clearTimeout(rT);rT=setTimeout(function(){drawChart('final');},180);});
+
+/* ---------- الـhero النحيف عند التمرير ---------- */
+new IntersectionObserver(function(en){
+  $('heroPanel').classList.toggle('slim',!en[0].isIntersecting);
+},{rootMargin:'-70px 0px 0px 0px'}).observe($('heroSentinel'));
+
+/* ---------- بانر التحديث (install.md P0-2) ---------- */
+var ctrl0=(navigator.serviceWorker&&navigator.serviceWorker.controller)?navigator.serviceWorker.controller.scriptURL:null;
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.ready.then(function(r){
+    setInterval(function(){r.update().catch(function(){});},3600e3);
+  }).catch(function(){});
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    if(ctrl0)$('updateBar').classList.add('show');
+  });
+  document.addEventListener('visibilitychange',function(){
+    if(!document.hidden)navigator.serviceWorker.ready.then(function(r){r.update().catch(function(){});}).catch(function(){});
+  });
+}
+$('updateGo').addEventListener('click',function(){location.reload();});
+
+/* ---------- التثبيت (install.md P1) ---------- */
+var deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();deferredPrompt=e;
+  $('installBtn').classList.add('show');
+});
+$('installBtn').addEventListener('click',function(){
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(function(){
+    deferredPrompt=null;$('installBtn').classList.remove('show');
+  }).catch(function(){});
+});
+(function iosCard(){
+  var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone;
+  if(isIOS&&!standalone&&!localStorage.getItem(IOSX))$('iosCard').classList.add('show');
+  $('iosCardX').addEventListener('click',function(){
+    localStorage.setItem(IOSX,'1');$('iosCard').classList.remove('show');
+  });
+})();
 
 /* ---------- init ---------- */
 (function init(){
   var cfg=loadCfg();
   $('rate').value=cfg.rate;$('g_price').value=cfg.g_price;$('g_cost').value=cfg.g_cost;
   $('d_price').value=cfg.d_price;$('d_cost').value=cfg.d_cost;
-  $('day').value=todayRiyadh();
-  $('todayLine').textContent=fmtDate(todayRiyadh());
+  var g0=loadGoal();
+  if(g0){
+    $('goalAmt').value=g0.amount;
+    document.querySelectorAll('[data-goalperiod]').forEach(function(x){
+      x.classList.toggle('on',x.getAttribute('data-goalperiod')===g0.period);
+    });
+  }
+  var t=todayRiyadh();
+  $('day').value=t;$('day').max=t;
+  $('todayLine').textContent=fmtDate(t);
   seed();
-  buildOdo(3);renderOdo(0,true);srUpdate(0);
+  buildOdo(fmt2(0));renderOdo(0,true);
+  $('heroSr').textContent=money(0);
+  bindGoalSeg();
   paintStatic(current());
   renderHistory();
-  drawChart('stats'); /* إحصائيات فورية */
-  setTimeout(function(){drawChart('intro');},reduced?0:820); /* نمو الأعمدة بعد مسح اللوحة */
+  drawChart('stats');
+  setTimeout(function(){drawChart('intro');},reduced?0:820);
   updateStreak(false);
+  updateGoalBar();
+  updateSavebarDate();
   ambStart();
 })();
 })();
-</script>
-
-<script>
-if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('./sw.js').catch(function () {});
-  });
-}
 </script>
 </body>
 </html>

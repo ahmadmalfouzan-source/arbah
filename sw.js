@@ -1,10 +1,12 @@
-/* Service Worker — حاسبة أرباح المتجر
-   التنقلات: الشبكة أولًا (لا نعرض HTML قديمًا أبدًا)
+/* Service Worker — حصّالة اليوم
+   التنقلات: الشبكة أولًا (قرار واعٍ موثق — لا نعرض HTML قديمًا أبدًا)،
+   ثم الكاش، ثم صفحة الأوفلاين الاحتياطية.
    ملفات الموقع: الكاش أولًا | الخطوط الخارجية: stale-while-revalidate */
-const CACHE = 'arbah-v1';
+const CACHE = 'arbah-v3';
 const CORE = [
   './',
   './index.html',
+  './offline.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
@@ -30,7 +32,7 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
 
-  // التنقل بين الصفحات: الشبكة أولًا ثم الكاش
+  // التنقل بين الصفحات: الشبكة أولًا ثم الكاش ثم الأوفلاين
   if (e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request)
@@ -39,7 +41,11 @@ self.addEventListener('fetch', (e) => {
           caches.open(CACHE).then((c) => c.put('./index.html', copy));
           return res;
         })
-        .catch(() => caches.match('./index.html'))
+        .catch(() =>
+          caches.match('./index.html').then(
+            (hit) => hit || caches.match('./offline.html')
+          )
+        )
     );
     return;
   }
